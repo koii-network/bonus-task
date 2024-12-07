@@ -17,9 +17,7 @@ export default async function getTaskList (connection, taskType) {
 
 	try {
 		if (taskType === "KOII") {
-			let result = await getKoiiTasks(connection);
-			console.log(result);
-			// ({ success, data: allTasks } = await retryWithMaxCount(getKoiiTasks(connection)));
+			({ success, data: allTasks } = await getKoiiTasks(connection));
 		} else {
 			({ success, data: allTasks } = await retryWithMaxCount(getKplTasks, [
 				connection,
