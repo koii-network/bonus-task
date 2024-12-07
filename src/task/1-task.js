@@ -23,7 +23,6 @@ export async function task(roundNumber) {
 
     // console.log('taskList', koiiTaskList, kplTaskList)
 
-
     await namespaceWrapper.storeSet("value", "Hello, World!");
   } catch (error) {
     console.error("EXECUTE TASK ERROR:", error);
