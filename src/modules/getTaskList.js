@@ -17,11 +17,13 @@ export default async function getTaskList (connection, taskType) {
 
 	try {
 		if (taskType === "KOII") {
-			({ success, data: allTasks } = await retryWithMaxCount(getKoiiTasks(connection)));
+			let result = await getKoiiTasks(connection);
+			console.log(result);
+			// ({ success, data: allTasks } = await retryWithMaxCount(getKoiiTasks(connection)));
 		} else {
 			({ success, data: allTasks } = await retryWithMaxCount(getKplTasks, [
 				connection,
-			]));
+			], 3, 30));
 		}
 	} catch (err) {
 		throw new Error("Failed to get tasks", err);
