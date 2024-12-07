@@ -10,6 +10,8 @@ import {
 export async function task(roundNumber) {
   // testing getTaskStateById (doesn't seem to work...)
   let taskState = await retryWithMaxCount(namespaceWrapper.getTaskStateById, ['E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr'], 3, 30); // testing with Mask Task
+  // can also try the old way
+  // let taskState = await namespaceWrapper.getTaskStateById('E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr');
   console.log('got test taskID', taskState)
 
   // everything below this is broken as taskState can't be fetched...
