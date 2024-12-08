@@ -51,17 +51,16 @@ export async function task(roundNumber) {
       "D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv" : 0.1 // Truflation
     };
 
-    // first, get the list of all taskIDs
-    let koiiTaskList = await getTaskList(connection, 'KOII');
-    console.log('tasklist', koiiTaskList)
-
     // now, loop over the taskIDs and calculate the dev_bonus and node_bonus
     // for each task
     for (let task of taskList) {
       let taskState = await namespaceWrapper.getTaskStateById(
         task.id, 
         task.type,
-        { is_available_balances_required: true }
+        { 
+          is_available_balances_required: true,
+          is_stake_list_required: true
+        }
       );
 
       if (!taskState) throw new Error("Task not found");
@@ -73,8 +72,7 @@ export async function task(roundNumber) {
       // before adding the bonuses to the distribution proposal, we must weight them by the global weighting factors
       // the developer receives half of the bonus rewards, and the node receives the other half
       // there is only one developer key per task, so we can just multiply the dev_bonus by the weighting factor
-      let total_unclaimed = unclaimed_rewards.reduce((acc, item) => acc + item, 0);
-      let total_weighted = total_unclaimed * weighting_factors[taskID];
+      let total_weighted = unclaimed_rewards.sum * weighting_factors[task.id];
       dev_bonus.push({ developer_key, total_weighted });
 
       // there will be many nodes running each task
@@ -89,8 +87,8 @@ export async function task(roundNumber) {
         // we must lookup the corresponding unclaimed balances for each node using their key
         let node_key = node_keys[i];
         let node_stake = node_stakes[i];
-        let node_unclaimed_rewards = unclaimed_rewards[node_key];
-        let node_bonus_amount = node_unclaimed_rewards * (1 - weighting_factors[taskID]) * node_stake;
+        let node_unclaimed_rewards = unclaimed_rewards.all[node_key];
+        let node_bonus_amount = node_unclaimed_rewards * (1 - weighting_factors[task.id]) * node_stake;
         node_bonus.push({ node_key, node_bonus_amount });
       }
       
@@ -104,7 +102,7 @@ export async function task(roundNumber) {
     }
 
     // as some developers and nodes may be common between the many tasks, we must harmonize the final distribution list
-    distribution_proposal = harmonizeDistribution(distribution_proposal);
+    distribution_proposal = await harmonizeDistribution(distribution_proposal);
     
     console.log('distribution_proposal', distribution_proposal)
 
@@ -118,10 +116,21 @@ async function getUnclaimedRewards (taskState) {
   // loop over the taskState.availableBalances array and sum the unclaimed rewards
   // then calculate the percentage for each wallet and return an array in the format { wallet: address, percentage: percentage }
   // the sum of all percentages should equal 1
-  let unclaimedRewards = taskState.availableBalances;
-  if (!unclaimedRewards) throw new Error("No unclaimed rewards found");
-  let totalRewards = unclaimedRewards.reduce((acc, item) => acc + item, 0);
-  return unclaimedRewards.map(item => item / totalRewards);
+  let unclaimedRewards = taskState.available_balances;
+  
+  // get the total unclaimed rewards
+  let unclaimedRewardsValues = Object.values(unclaimedRewards);
+  let totalUnclaimed = unclaimedRewardsValues.reduce((acc, item) => acc + item, 0);
+  let unclaimedRewardsKeys = Object.keys(unclaimedRewards);
+  let output = []
+
+  // calculate the percentage for each wallet
+  for (let wallet in unclaimedRewardsKeys) {
+    output[wallet] = unclaimedRewards[wallet] / totalUnclaimed;
+  }
+  console.log('unclaimedRewards', unclaimedRewards)
+
+  return { all: output, sum: totalUnclaimed };
 }
 
 async function harmonizeDistribution ( distribution_proposal ) {
@@ -144,4 +153,6 @@ async function harmonizeDistribution ( distribution_proposal ) {
       }
     }
   }
+
+  return harmonized;
 }
