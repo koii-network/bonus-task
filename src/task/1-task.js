@@ -9,7 +9,7 @@ import {
 
 export async function task(roundNumber) {
   // testing getTaskStateById (doesn't seem to work...)
-  // let taskState = await retryWithMaxCount(namespaceWrapper.getTaskStateById, ['E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr'], 3, 30); // testing with Mask Task
+  let taskState = await retryWithMaxCount(namespaceWrapper.getTaskStateById, ['E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr', 'KOII'], 3, 30); // testing with Mask Task
   // can also try the old way
   // let taskState = await namespaceWrapper.getTaskStateById('E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr');
   // console.log('EZ TESTING got test taskID', taskState)
@@ -40,12 +40,19 @@ export async function task(roundNumber) {
     // let kplTaskList = await getTaskList(connection, 'kpl');
     // TODO check if the getTaskStateById() works for KPL
 
-    let taskList = koiiTaskList.taskPubKeys;
+    // the taskList is formatted as an array like 
+    /* 
+    [ PublicKey {
+      _bn: <BN: a3b0e4a40041a9f9c9cefab13d2a7a4b33abeae25ca9f7430752add1bde92e72>
+    } ... ]
+    */
+    // so we must extract the pubkeys and convert them from base64
+    let taskList = koiiTaskList.taskPubKeys.map(task => task.toBase58()); // TODO
 
     // now, loop over the taskIDs and calculate the dev_bonus and node_bonus
     // for each task
     for (let taskID of taskList) {
-      let taskState = await namespaceWrapper.getTaskStateById(taskID);
+      let taskState = await namespaceWrapper.getTaskStateById(taskID, 'KOII');
 
       if (!taskState) throw new Error("Task not found");
 
@@ -102,6 +109,7 @@ async function getUnclaimedRewards (taskState) {
   // then calculate the percentage for each wallet and return an array in the format { wallet: address, percentage: percentage }
   // the sum of all percentages should equal 1
   let unclaimedRewards = taskState.availableBalances;
+  if (!unclaimedRewards) throw new Error("No unclaimed rewards found");
   let totalRewards = unclaimedRewards.reduce((acc, item) => acc + item, 0);
   return unclaimedRewards.map(item => item / totalRewards);
 }
