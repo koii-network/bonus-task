@@ -9,7 +9,7 @@ import {
 
 export async function task(roundNumber) {
   // testing getTaskStateById (doesn't seem to work...)
-  let taskState = await retryWithMaxCount(namespaceWrapper.getTaskStateById, ['E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr', 'KOII'], 3, 30); // testing with Mask Task
+  // let taskState = await retryWithMaxCount(namespaceWrapper.getTaskStateById, ['E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr', 'KOII'], 3, 30); // testing with Mask Task
   // can also try the old way
   // let taskState = await namespaceWrapper.getTaskStateById('E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr');
   // console.log('EZ TESTING got test taskID', taskState)
@@ -26,6 +26,24 @@ export async function task(roundNumber) {
 
     // the weighting factors are stored in array formatted with the taskId as the key, and the weighting factor as the value, the sum of all weighting factors should equal 1
     // eventually, these factors will be decided by a public vote of anyone running this task
+    let taskList = [
+      {
+        id : "E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr",
+        type : "KOII"
+      },
+      {
+        id : "GX5dfxY5Ns82KZrJX4a8bBw3a6WMPHJ3sBxmycfoXR2Y",
+        type : "KOII"
+      },
+      {
+        id : "KiwDeyqgkC8bgKgXkBLa4qQ2honuBB4Zu152C6Ggb9J",
+        type: "KOII"
+      },
+      {
+        id : "D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv",
+        type : "KOII"
+      }
+    ]
     let weighting_factors = {
       "E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr" : 0.3, // Mask Task
       "GX5dfxY5Ns82KZrJX4a8bBw3a6WMPHJ3sBxmycfoXR2Y" : 0.1, // Free Token Task
@@ -37,22 +55,14 @@ export async function task(roundNumber) {
     let koiiTaskList = await getTaskList(connection, 'KOII');
     console.log('tasklist', koiiTaskList)
 
-    // let kplTaskList = await getTaskList(connection, 'kpl');
-    // TODO check if the getTaskStateById() works for KPL
-
-    // the taskList is formatted as an array like 
-    /* 
-    [ PublicKey {
-      _bn: <BN: a3b0e4a40041a9f9c9cefab13d2a7a4b33abeae25ca9f7430752add1bde92e72>
-    } ... ]
-    */
-    // so we must extract the pubkeys and convert them from base64
-    let taskList = koiiTaskList.taskPubKeys.map(task => task.toBase58()); // TODO
-
     // now, loop over the taskIDs and calculate the dev_bonus and node_bonus
     // for each task
-    for (let taskID of taskList) {
-      let taskState = await namespaceWrapper.getTaskStateById(taskID, 'KOII');
+    for (let task of taskList) {
+      let taskState = await namespaceWrapper.getTaskStateById(
+        task.id, 
+        task.type,
+        { is_available_balances_required: true }
+      );
 
       if (!taskState) throw new Error("Task not found");
 
