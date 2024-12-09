@@ -19,7 +19,7 @@ export async function task(roundNumber) {
     console.log(`EXECUTE TASK FOR ROUND ${roundNumber}`);
     // you can optionally return this value to be used in debugging
 
-    let connection = new Connection(K2_URL);
+    // let connection = new Connection(K2_URL);
     let distribution_proposal = [];
     let dev_bonus = [];
     let node_bonus = [];
@@ -77,34 +77,32 @@ export async function task(roundNumber) {
 
       // there will be many nodes running each task
       // and multiply each item by the weighting factor
-      // the taskState.stake_list contains a list of wallets staked into the task formatted as { wallet_addres : stake_amount } where the stake amount is an integer
-      // we must extract the list of staked keys
       let node_keys = Object.keys(taskState.stake_list);
-      let node_stakes = Object.values(taskState.stake_list);
 
       // now we can calculate the node_bonus for each node
-      for (let i = 0; i < node_keys.length; i++) {
-        // we must lookup the corresponding unclaimed balances for each node using their key
-        let node_key = node_keys[i];
-        let node_stake = node_stakes[i];
-        let node_unclaimed_rewards = unclaimed_rewards.all[node_key];
-        let node_bonus_amount = node_unclaimed_rewards * (1 - weighting_factors[task.id]) * node_stake;
-        node_bonus.push({ node_key, node_bonus_amount });
+      let unclaimedRewardsKeys = Object.keys(unclaimed_rewards.all);
+      for (let key of unclaimedRewardsKeys) {
+        let weight = weighting_factors[task.id];
+        let node_bonus_amount = unclaimed_rewards.all[key] * (weight); // todo : incorporate the stake amount into the bonus
+        node_bonus[key] = node_bonus_amount;
       }
       
-      // now we must add the developer rewards to the distribution proposal
-      distribution_proposal.push({ developer_key, dev_bonus });
-
       // and then the node rewards must be added using the node_bonus_amount for each key
-      for (let i = 0; i < node_keys.length; i++) {
-        distribution_proposal.push({ node_key: node_keys[i], node_bonus: node_bonus[i] });
+      for (let key of node_keys) {
+        distribution_proposal[ key ] = node_bonus[key];
       }
+
+      // now we must add the developer rewards to the distribution proposal
+      distribution_proposal[developer_key] = dev_bonus;
+
+      // TODO: if the developer is also staking, we must add the stake amount to the dev_bonus
     }
+    console.log('distribution_proposal', distribution_proposal)
 
     // as some developers and nodes may be common between the many tasks, we must harmonize the final distribution list
     distribution_proposal = await harmonizeDistribution(distribution_proposal);
     
-    console.log('distribution_proposal', distribution_proposal)
+    // console.log('distribution_proposal', distribution_proposal)
 
     await namespaceWrapper.storeSet("dist_"+roundNumber, distribution_proposal);
   } catch (error) {
@@ -121,14 +119,18 @@ async function getUnclaimedRewards (taskState) {
   // get the total unclaimed rewards
   let unclaimedRewardsValues = Object.values(unclaimedRewards);
   let totalUnclaimed = unclaimedRewardsValues.reduce((acc, item) => acc + item, 0);
+  // console.log('total unclaimed', totalUnclaimed)
   let unclaimedRewardsKeys = Object.keys(unclaimedRewards);
+  // console.log('unclaimedRewardsKeys length', unclaimedRewardsKeys.length)
   let output = []
 
   // calculate the percentage for each wallet
   for (let wallet in unclaimedRewardsKeys) {
-    output[wallet] = unclaimedRewards[wallet] / totalUnclaimed;
+    console.log(unclaimedRewardsKeys[wallet], unclaimedRewardsValues[wallet] )
+    let wallet_key = unclaimedRewardsKeys[wallet];
+    let rewards_portion = unclaimedRewardsValues[wallet] / totalUnclaimed;
+    output[wallet_key] = rewards_portion;
   }
-  console.log('unclaimedRewards', unclaimedRewards)
 
   return { all: output, sum: totalUnclaimed };
 }
@@ -137,6 +139,7 @@ async function harmonizeDistribution ( distribution_proposal ) {
   // this function takes in the distribution proposal and harmonizes it so that each wallet only appears once
   // the rewards are then summed and returned in a new array
   // all bonuses must be integers
+  // console.log(distribution_proposal)
   let harmonized = [];
   let wallet_list = [];
   for (let item of distribution_proposal) {
