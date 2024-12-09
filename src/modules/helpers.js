@@ -23,6 +23,7 @@ async function getUnclaimedRewards (taskState) {
   return { all: output, sum: totalUnclaimed };
 }
 
+// no longer used
 async function harmonizeDistribution ( distribution_proposal ) {
   // this function takes in the distribution proposal and harmonizes it so that each wallet only appears once
   // the rewards are then summed and returned in a new array
