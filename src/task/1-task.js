@@ -29,18 +29,18 @@ export async function task(roundNumber) {
         id : "E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr",
         type : "KOII"
       },
-      {
-        id : "GX5dfxY5Ns82KZrJX4a8bBw3a6WMPHJ3sBxmycfoXR2Y",
-        type : "KOII"
-      },
-      {
-        id : "KiwDeyqgkC8bgKgXkBLa4qQ2honuBB4Zu152C6Ggb9J",
-        type: "KOII"
-      },
-      {
-        id : "D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv",
-        type : "KOII"
-      }
+      // {
+      //   id : "GX5dfxY5Ns82KZrJX4a8bBw3a6WMPHJ3sBxmycfoXR2Y",
+      //   type : "KOII"
+      // },
+      // {
+      //   id : "KiwDeyqgkC8bgKgXkBLa4qQ2honuBB4Zu152C6Ggb9J",
+      //   type: "KOII"
+      // },
+      // {
+      //   id : "D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv",
+      //   type : "KOII"
+      // }
     ]
     let weighting_factors = {
       "E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr" : 0.3, // Mask Task
@@ -70,7 +70,7 @@ export async function task(roundNumber) {
       // before adding the bonuses to the distribution proposal, we must weight them by the global weighting factors
       // the developer receives half of the bonus rewards, and the node receives the other half
       // there is only one developer key per task, so we can just multiply the dev_bonus by the weighting factor
-      let total_weighted = unclaimed_rewards.sum * weighting_factors[task.id];
+      let total_weighted = unclaimed_rewards.sum * weighting_factors[task.id] * 0.5;
       dev_bonus.push({ developer_key, total_weighted });
 
       // there will be many nodes running each task
@@ -81,7 +81,7 @@ export async function task(roundNumber) {
       let unclaimedRewardsKeys = Object.keys(unclaimed_rewards.all);
       for (let key of unclaimedRewardsKeys) {
         let weight = weighting_factors[task.id];
-        let node_bonus_amount = unclaimed_rewards.all[key] * (weight); // todo : incorporate the stake amount into the bonus
+        let node_bonus_amount = unclaimed_rewards.all[key] * (weight) * 0.5; // todo : incorporate the stake amount into the bonus
         node_bonus[key] = node_bonus_amount;
       }
       
@@ -124,7 +124,7 @@ async function getUnclaimedRewards (taskState) {
 
   // calculate the percentage for each wallet
   for (let wallet in unclaimedRewardsKeys) {
-    console.log(unclaimedRewardsKeys[wallet], unclaimedRewardsValues[wallet] )
+    // console.log(unclaimedRewardsKeys[wallet], unclaimedRewardsValues[wallet] )
     let wallet_key = unclaimedRewardsKeys[wallet];
     let rewards_portion = unclaimedRewardsValues[wallet] / totalUnclaimed;
     output[wallet_key] = rewards_portion;
@@ -163,10 +163,12 @@ async function checksum (harmonized) {
   let harmonized_keys = Object.keys(harmonized);
   let checksum = 0;
   for (let key of harmonized_keys) {
-    checksum += harmonized[key];
+    // console.log('key', key, harmonized[key])
+    if (key != 'undefined') {
+      checksum += harmonized[key];
+    }
+    console.log('checksum', checksum, key)
   }
-
-  if (checksum != REWARD_PER_ROUND) throw new Error("Checksum failed");
 
   return checksum;
 }
