@@ -4,17 +4,15 @@ import { Connection, PublicKey } from "@_koii/web3.js";
 import { retryWithMaxCount } from "../modules/retryWithMaxCount.js";
 
 import {
-	K2_URL
+	K2_URL,
+  REWARD_PER_ROUND
 } from "../config/constants.js";
 
 export async function task(roundNumber) {
-  // testing getTaskStateById (doesn't seem to work...)
-  // let taskState = await retryWithMaxCount(namespaceWrapper.getTaskStateById, ['E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr', 'KOII'], 3, 30); // testing with Mask Task
-  // can also try the old way
-  // let taskState = await namespaceWrapper.getTaskStateById('E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr');
-  // console.log('EZ TESTING got test taskID', taskState)
-
-  // everything below this is broken as taskState can't be fetched...
+  /**
+   * Execute the task for the given round
+   * Must return a string of max 512 bytes to be submitted on chain
+   */
   try {
     console.log(`EXECUTE TASK FOR ROUND ${roundNumber}`);
     // you can optionally return this value to be used in debugging
@@ -102,7 +100,7 @@ export async function task(roundNumber) {
     // as some developers and nodes may be common between the many tasks, we must harmonize the final distribution list
     distribution_proposal = await harmonizeDistribution(distribution_proposal);
     
-    // console.log('distribution_proposal', distribution_proposal)
+    console.log('distribution_proposal', distribution_proposal)
 
     await namespaceWrapper.storeSet("dist_"+roundNumber, distribution_proposal);
   } catch (error) {
@@ -140,22 +138,19 @@ async function harmonizeDistribution ( distribution_proposal ) {
   // the rewards are then summed and returned in a new array
   // all bonuses must be integers
   // console.log(distribution_proposal)
+  
   let harmonized = [];
-  let wallet_list = [];
-  for (let item of distribution_proposal) {
-    let wallet = item.developer_key || item.node_key;
-    if (!wallet_list.includes(wallet)) {
-      wallet_list.push(wallet);
-      harmonized.push(item);
+  let distribution_proposal_keys = Object.keys(distribution_proposal);
+  for (let key of distribution_proposal_keys) {
+    if (!distribution_proposal[key]) distribution_proposal[key] = 0;
+    let value = distribution_proposal[key] * REWARD_PER_ROUND;
+    if (harmonized[key]) {
+      harmonized[key] += value;
     } else {
-      let index = wallet_list.indexOf(wallet);
-      if (item.developer_key) {
-        harmonized[index].total_weighted += item.total_weighted;
-      } else {
-        harmonized[index].node_bonus_amount += item.node_bonus_amount;
-      }
+      harmonized[key] = value;
     }
   }
+
 
   return harmonized;
 }
