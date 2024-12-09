@@ -95,12 +95,12 @@ export async function task(roundNumber) {
 
       // TODO: if the developer is also staking, we must add the stake amount to the dev_bonus
     }
-    console.log('distribution_proposal', distribution_proposal)
+    // console.log('distribution_proposal', distribution_proposal)
 
     // as some developers and nodes may be common between the many tasks, we must harmonize the final distribution list
     distribution_proposal = await harmonizeDistribution(distribution_proposal);
     
-    console.log('distribution_proposal', distribution_proposal)
+    // console.log('distribution_proposal', distribution_proposal)
 
     await namespaceWrapper.storeSet("dist_"+roundNumber, distribution_proposal);
   } catch (error) {
@@ -151,6 +151,22 @@ async function harmonizeDistribution ( distribution_proposal ) {
     }
   }
 
+  let checksum_result = await checksum(harmonized);
+  console.log('checksum', checksum_result);
 
   return harmonized;
+}
+
+async function checksum (harmonized) {
+  // calculate the total sum of the harmonized rewards 
+  
+  let harmonized_keys = Object.keys(harmonized);
+  let checksum = 0;
+  for (let key of harmonized_keys) {
+    checksum += harmonized[key];
+  }
+
+  if (checksum != REWARD_PER_ROUND) throw new Error("Checksum failed");
+
+  return checksum;
 }
