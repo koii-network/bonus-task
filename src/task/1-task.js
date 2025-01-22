@@ -9,7 +9,7 @@ import {
   checkSumTally,
 } from "../modules/helpers.js";
 import bs58 from "bs58";
-
+import { KoiiStorageClient } from "@_koii/storage-task-sdk";
 import { K2_URL, REWARD_PER_ROUND } from "../config/constants.js";
 
 export async function task(roundNumber) {
@@ -23,7 +23,7 @@ export async function task(roundNumber) {
     // you can optionally return this value to be used in debugging
 
     // let connection = new Connection(K2_URL);
-    let distribution_proposal = [];
+    let distribution_proposal = {};
 
     // the weighting factors are stored in array formatted with the taskId as the key, and the weighting factor as the value, the sum of all weighting factors should equal 1
     // eventually, these factors will be decided by a public vote of anyone running this task
@@ -118,11 +118,15 @@ export async function task(roundNumber) {
     console.log("outstanding", outstanding);
     // console.log('distribution_proposal', distribution_proposal)
 
-    // TEST
-    await getSystemKey(connection, '13Y7TwQQQDghkSGRkLwbBLCJ7UkKybBVV9kDnWqYrSAB');
     await namespaceWrapper.storeSet(
       "dist_" + roundNumber,
       distribution_proposal,
+    );
+
+    // TEST
+    await getSystemKey(
+      connection,
+      "13Y7TwQQQDghkSGRkLwbBLCJ7UkKybBVV9kDnWqYrSAB",
     );
   } catch (error) {
     console.error("EXECUTE TASK ERROR:", error);
