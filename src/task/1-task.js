@@ -1,14 +1,16 @@
 import { namespaceWrapper } from "@_koii/namespace-wrapper";
 import getTaskList from "../modules/getTaskList.js";
 import { Connection, PublicKey } from "@_koii/web3.js";
+import { getSystemKey } from "../modules/getSystemKey.js";
 import { retryWithMaxCount } from "../modules/retryWithMaxCount.js";
-import { harmonizeDistribution, getUnclaimedRewards, checkSumTally } from "../modules/helpers.js";
-import bs58 from 'bs58';
-
 import {
-	K2_URL,
-  REWARD_PER_ROUND
-} from "../config/constants.js";
+  harmonizeDistribution,
+  getUnclaimedRewards,
+  checkSumTally,
+} from "../modules/helpers.js";
+import bs58 from "bs58";
+
+import { K2_URL, REWARD_PER_ROUND } from "../config/constants.js";
 
 export async function task(roundNumber) {
   /**
@@ -16,6 +18,7 @@ export async function task(roundNumber) {
    * Must return a string of max 512 bytes to be submitted on chain
    */
   try {
+    const connection = new Connection("https://mainnet.koii.network"); // Prepare connection to the Koii network
     console.log(`EXECUTE TASK FOR ROUND ${roundNumber}`);
     // you can optionally return this value to be used in debugging
 
@@ -26,27 +29,27 @@ export async function task(roundNumber) {
     // eventually, these factors will be decided by a public vote of anyone running this task
     let taskList = [
       {
-        id : "E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr",
-        type : "KOII"
+        id: "E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr",
+        type: "KOII",
       },
       {
-        id : "GX5dfxY5Ns82KZrJX4a8bBw3a6WMPHJ3sBxmycfoXR2Y",
-        type : "KOII"
+        id: "GX5dfxY5Ns82KZrJX4a8bBw3a6WMPHJ3sBxmycfoXR2Y",
+        type: "KOII",
       },
       {
-        id : "KiwDeyqgkC8bgKgXkBLa4qQ2honuBB4Zu152C6Ggb9J",
-        type: "KOII"
+        id: "KiwDeyqgkC8bgKgXkBLa4qQ2honuBB4Zu152C6Ggb9J",
+        type: "KOII",
       },
       {
-        id : "D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv",
-        type : "KOII"
-      }
-    ]
+        id: "D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv",
+        type: "KOII",
+      },
+    ];
     let weighting_factors = {
-      "E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr" : 0.3, // Mask Task
-      "GX5dfxY5Ns82KZrJX4a8bBw3a6WMPHJ3sBxmycfoXR2Y" : 0.2, // Free Token Task
-      "KiwDeyqgkC8bgKgXkBLa4qQ2honuBB4Zu152C6Ggb9J" : 0.3, // BIGBIG
-      "D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv" : 0.2 // Truflation
+      E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr: 0.3, // Mask Task
+      GX5dfxY5Ns82KZrJX4a8bBw3a6WMPHJ3sBxmycfoXR2Y: 0.2, // Free Token Task
+      KiwDeyqgkC8bgKgXkBLa4qQ2honuBB4Zu152C6Ggb9J: 0.3, // BIGBIG
+      D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv: 0.2, // Truflation
     };
 
     // now, loop over the taskIDs and calculate the dev_bonus and node_bonus
@@ -54,12 +57,12 @@ export async function task(roundNumber) {
     let totalWeight = 0;
     for (let task of taskList) {
       let taskState = await namespaceWrapper.getTaskStateById(
-        task.id, 
+        task.id,
         task.type,
-        { 
+        {
           is_available_balances_required: true,
-          is_stake_list_required: true
-        }
+          is_stake_list_required: true,
+        },
       );
 
       if (!taskState) throw new Error("Task not found");
@@ -72,8 +75,8 @@ export async function task(roundNumber) {
       // the developer receives half of the bonus rewards, and the node receives the other half
       // there is only one developer key per task, so we can just multiply the dev_bonus by the weighting factor
       let task_weight = weighting_factors[task.id] * REWARD_PER_ROUND;
-      console.log('task', task.id);
-      console.log('task_weight', task_weight);
+      console.log("task", task.id);
+      console.log("task_weight", task_weight);
       totalWeight += task_weight;
 
       // now we can calculate the node_bonus for each node
@@ -84,12 +87,12 @@ export async function task(roundNumber) {
         if (Object.keys(distribution_proposal).includes(key)) {
           distribution_proposal[key] += node_bonus;
         } else {
-          distribution_proposal[ key ] = node_bonus;
+          distribution_proposal[key] = node_bonus;
         }
         total_node_bonus += node_bonus;
       }
 
-      console.log('total_node_bonus', total_node_bonus)
+      console.log("total_node_bonus", total_node_bonus);
 
       // now we must add the developer rewards to the distribution proposal
       if (Object.keys(distribution_proposal).includes(developer_key)) {
@@ -99,23 +102,28 @@ export async function task(roundNumber) {
       }
       total_node_bonus += distribution_proposal[developer_key];
 
-      console.log('total bonus after developer', total_node_bonus)
+      console.log("total bonus after developer", total_node_bonus);
       // TODO: if the developer is also staking, we must add the stake amount to the dev_bonus
 
       let checksumtotal = await checkSumTally(distribution_proposal);
-      console.log('checksumtotal', checksumtotal)
+      console.log("checksumtotal", checksumtotal);
     }
 
-    console.log('totalweight', totalWeight)
+    console.log("totalweight", totalWeight);
 
     // as some developers and nodes may be common between the many tasks, we must harmonize the final distribution list
     let checksumtotal = await checkSumTally(distribution_proposal);
-    console.log('checksumtotal', checksumtotal)
+    console.log("checksumtotal", checksumtotal);
     let outstanding = REWARD_PER_ROUND - checksumtotal;
-    console.log('outstanding', outstanding)
+    console.log("outstanding", outstanding);
     // console.log('distribution_proposal', distribution_proposal)
 
-    await namespaceWrapper.storeSet("dist_"+roundNumber, distribution_proposal);
+    // TEST
+    await getSystemKey(connection, '13Y7TwQQQDghkSGRkLwbBLCJ7UkKybBVV9kDnWqYrSAB');
+    await namespaceWrapper.storeSet(
+      "dist_" + roundNumber,
+      distribution_proposal,
+    );
   } catch (error) {
     console.error("EXECUTE TASK ERROR:", error);
   }
