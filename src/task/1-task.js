@@ -9,7 +9,6 @@ import {
   checkSumTally,
 } from "../modules/helpers.js";
 import bs58 from "bs58";
-import { KoiiStorageClient } from "@_koii/storage-task-sdk";
 import { K2_URL, REWARD_PER_ROUND } from "../config/constants.js";
 
 export async function task(roundNumber) {

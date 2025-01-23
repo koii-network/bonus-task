@@ -1,5 +1,6 @@
 import { namespaceWrapper } from "@_koii/namespace-wrapper";
 import { storeInFile } from "../modules/storeFile.js";
+import { KoiiStorageClient } from "@_koii/storage-task-sdk";
 
 export async function submission(roundNumber) {
   /**
