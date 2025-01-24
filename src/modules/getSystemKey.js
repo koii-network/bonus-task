@@ -3,6 +3,7 @@ import { PublicKey } from "@_koii/web3.js";
 export async function getSystemKey(connection, stakingKey) {
   try {
     const publicKey = new PublicKey(stakingKey);
+
     // Fetching transaction signatures for the given public key
     const response = await connection.getConfirmedSignaturesForAddress2(
       publicKey,
@@ -12,24 +13,18 @@ export async function getSystemKey(connection, stakingKey) {
       },
     );
 
-    if (response && response.length > 0) {
-      // Use the first transaction signature to get transaction details
-      const transaction = await connection.getConfirmedTransaction(
-        response[0].signature,
-        "confirmed",
-      );
+    if (response && response.length === 0) return null;
 
-      if (transaction && transaction.transaction) {
-        const syskey =
-          transaction.transaction.signatures[0].publicKey.toString();
-        console.log("syskey", syskey);
-        return syskey;
-      } else {
-        return null;
-      }
-    } else {
-      console.log(`No transactions found for ${stakingKey}`);
-    }
+    const transaction = await connection.getConfirmedTransaction(
+      response[0].signature,
+      "confirmed",
+    );
+
+    if (!transaction || !transaction.transaction) return null;
+
+    const syskey = transaction.transaction.signatures[0]?.publicKey?.toString();
+
+    return syskey || null;
   } catch (e) {
     console.error("Something goes wrong when get user system key", e);
     return null;
