@@ -19,6 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@_koii/create-task-cli": "^1.1.7",
     "@_koii/namespace-wrapper": "^1.0.14",
     "@_koii/task-manager": "^1.0.1",
     "@_koii/web3.js": "^0.1.11",
