@@ -1,14 +1,17 @@
-async function getUnclaimedRewards (taskState) {
+async function getUnclaimedRewards(taskState) {
   // loop over the taskState.availableBalances array and sum the unclaimed rewards
   // then calculate the percentage for each wallet and return an array in the format { wallet: address, percentage: percentage }
   // the sum of all percentages should equal 1
   let unclaimedRewards = taskState.available_balances;
-  
+
   // get the total unclaimed rewards
   let unclaimedRewardsValues = Object.values(unclaimedRewards);
-  let totalUnclaimed = unclaimedRewardsValues.reduce((acc, item) => acc + item, 0);
+  let totalUnclaimed = unclaimedRewardsValues.reduce(
+    (acc, item) => acc + item,
+    0,
+  );
   let unclaimedRewardsKeys = Object.keys(unclaimedRewards);
-  let output = []
+  let output = [];
   let rewardsPortionTotal = 0;
 
   // calculate the percentage for each wallet
@@ -18,34 +21,14 @@ async function getUnclaimedRewards (taskState) {
     output[wallet_key] = rewards_portion;
     rewardsPortionTotal += rewards_portion;
   }
-  console.log('rewards_portion', rewardsPortionTotal)
+  console.log("rewards_portion", rewardsPortionTotal);
 
   return { all: output, sum: totalUnclaimed };
 }
 
-// no longer used
-async function harmonizeDistribution ( distribution_proposal ) {
-  // this function takes in the distribution proposal and harmonizes it so that each wallet only appears once
-  // the rewards are then summed and returned in a new array
-  // all bonuses must be integers
-  
-  let harmonized = [];
-  let distribution_proposal_keys = Object.keys(distribution_proposal);
-  for (let key of distribution_proposal_keys) {
-      let value = distribution_proposal[key];
-      if (harmonized[key]) {
-        harmonized[key] += value;
-      } else {
-        harmonized[key] = value;
-      }
-  }
+async function checkSumTally(harmonized) {
+  // calculate the total sum of the harmonized rewards
 
-  return harmonized;
-}
-
-async function checkSumTally (harmonized) {
-  // calculate the total sum of the harmonized rewards 
-  
   let harmonized_keys = Object.keys(harmonized);
   let checksum = 0;
   for (let key of harmonized_keys) {
@@ -55,4 +38,57 @@ async function checkSumTally (harmonized) {
   return checksum;
 }
 
-export { getUnclaimedRewards, harmonizeDistribution, checkSumTally };
+// Calculate rewards for users based on their stakes and submissions
+async function calculateRewards(users, totalReward) {
+  // Calculate total weight
+  let totalWeight = 0;
+
+  // Calculate user weights
+  const userWeights = {};
+
+  // Calculate weights
+  for (const user in users) {
+    userWeights[user] = calculateWeight(users[user]);
+    totalWeight += userWeights[user];
+  }
+
+  // Calculate rewards based on weights and total reward
+  const rewards = {};
+  for (const user in users) {
+    rewards[user] = (userWeights[user] / totalWeight) * totalReward;
+  }
+
+  return rewards;
+}
+
+function calculateWeight(user, alpha = 0.5) {
+  const beta = 1 - alpha;
+
+  let stakeWeight = 0;
+  let submissionWeight = 0;
+  let developerBonus = 0;
+
+  // Sum submissions
+  if (user.submissions) {
+    for (const task in user.submissions) {
+      submissionWeight += user.submissions[task];
+
+      // Developer bonus
+      if (user.developerOf && user.developerOf[task] === true) {
+        developerBonus += 0.5 * user.submissions[task];
+      }
+    }
+  }
+
+  // Sum stakes
+  if (user.stakes) {
+    for (const task in user.stakes) {
+      stakeWeight += user.stakes[task];
+    }
+  }
+
+  // Final weight calculation
+  return alpha * stakeWeight + beta * (submissionWeight + developerBonus);
+}
+
+export { checkSumTally, calculateRewards };

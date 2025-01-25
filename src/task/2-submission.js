@@ -21,12 +21,6 @@ export async function submission(roundNumber) {
 
     const getCID = await getSubmissionCID(getFilePath);
 
-    // Not sure if we need to store again data before the audits
-    // await namespaceWrapper.storeSet("dist_" + roundNumber, {
-    //   get_distribution_proposal,
-    //   getCID,
-    // });
-
     console.log("submission completed");
     return getCID;
   } catch (error) {

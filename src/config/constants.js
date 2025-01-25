@@ -6,7 +6,7 @@ export const COLLECTION_NAME = "stakingwallets";
 export const DB_BATCH_SIZE = 500;
 export const IS_TESTING = false;
 export const TESTING_BATCH_LIMIT = 5;
-export const REWARD_PER_ROUND = 1000000;
+export const REWARD_PER_ROUND = 10000000000;
 
 export const KOII_PROGRAM_ACCOUNT =
   "Koiitask22222222222222222222222222222222222";
