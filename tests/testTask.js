@@ -8,8 +8,8 @@ async function executeTasks() {
   await taskRunner.task(round);
 
   //   for submission testing
-  //   await new Promise((resolve) => setTimeout(resolve, 3000));
-  //   await taskRunner.submitTask(round);
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  await taskRunner.submitTask(round);
   process.exit(0);
 }
 executeTasks();

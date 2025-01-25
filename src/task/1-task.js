@@ -4,7 +4,6 @@ import { calculateRewards, checkSumTally } from "../modules/helpers.js";
 import bs58 from "bs58";
 import { K2_URL, REWARD_PER_ROUND } from "../config/constants.js";
 import { taskList, weighting_factors } from "../modules/globalList.js";
-import { storeInFile } from "../modules/storeFile.js";
 
 export async function task(roundNumber) {
   /**
@@ -82,8 +81,6 @@ export async function task(roundNumber) {
       0,
     );
     console.log("total_node_bonus:", total_node_bonus);
-
-    await storeInFile({ users });
 
     await namespaceWrapper.storeSet(
       "dist_" + roundNumber,
