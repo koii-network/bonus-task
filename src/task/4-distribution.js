@@ -6,11 +6,13 @@ import { namespaceWrapper } from "@_koii/namespace-wrapper";
 const SLASH_PERCENT = 0.7;
 
 export async function distribution(submitters, bounty, roundNumber) {
+  console.log(submitters, bounty, roundNumber);
+
   // fetch the distribution from the state
   const get_distribution_proposal = await namespaceWrapper.storeGet(
     "dist_" + roundNumber,
   );
 
   // Return the final distribution list
-  return get_distribution_proposal;
+  return {};
 }

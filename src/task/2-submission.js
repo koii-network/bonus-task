@@ -19,10 +19,14 @@ export async function submission(roundNumber) {
     });
     console.log("getFilePath", getFilePath);
 
-    const getCID = await getSubmissionCID(getFilePath);
+    if (getFilePath === "") {
+      return "";
+    }
+
+    // const getCID = await getSubmissionCID(getFilePath);
 
     console.log("submission completed");
-    return getCID;
+    return "getCID";
   } catch (error) {
     console.error("MAKE SUBMISSION ERROR:", error);
   }

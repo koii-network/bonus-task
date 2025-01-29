@@ -2,7 +2,7 @@ import { namespaceWrapper } from "@_koii/namespace-wrapper";
 import { PublicKey } from "@_koii/web3.js";
 import { calculateRewards, checkSumTally } from "../modules/helpers.js";
 import bs58 from "bs58";
-import { K2_URL, REWARD_PER_ROUND } from "../config/constants.js";
+import { REWARD_PER_ROUND } from "../config/constants.js";
 import { taskList, weighting_factors } from "../modules/globalList.js";
 
 export async function task(roundNumber) {
@@ -16,9 +16,6 @@ export async function task(roundNumber) {
 
     const getTaskList = taskList;
     const getWeightList = weighting_factors;
-
-    // for each task
-    let totalWeight = 0;
 
     // the all task states are fetched in parallel
     const getAllTaskStates = await getTaskState(getTaskList);
@@ -39,6 +36,7 @@ export async function task(roundNumber) {
       for (const lastFiveKey of lastFiveKeys) {
         const submission = submissions[`${lastFiveKey}`];
 
+        // kpl staking key
         for (const itemKey of Object.keys(submission)) {
           if (stake_list.hasOwnProperty(itemKey)) {
             if (!users[itemKey]) {
@@ -82,10 +80,23 @@ export async function task(roundNumber) {
     );
     console.log("total_node_bonus:", total_node_bonus);
 
-    await namespaceWrapper.storeSet(
-      "dist_" + roundNumber,
+    // get both kpl and koii staking key
+    const getKoiiStakingKey =
+      await namespaceWrapper.getSubmitterAccount("KOII");
+    const getKPLStakingKey = await namespaceWrapper.getSubmitterAccount("KPL");
+
+    const koiiPublicKey = getKoiiStakingKey.publicKey.toBase58();
+    const kplPublicKey = getKPLStakingKey.publicKey.toBase58();
+
+    const getStakingKeys = {
+      getKoiiStakingKey: koiiPublicKey,
+      getKPLStakingKey: kplPublicKey,
+    };
+
+    await namespaceWrapper.storeSet("dist_" + roundNumber, {
+      getStakingKeys,
       distribution_proposal,
-    );
+    });
   } catch (error) {
     console.error("EXECUTE TASK ERROR:", error);
   }
