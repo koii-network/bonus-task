@@ -23,8 +23,10 @@ export async function task(roundNumber) {
       taskState.starting_slot + roundNumber * taskState.round_time;
 
     const currentSlot = await namespaceWrapper.getSlot();
+    console.log("Round Begin Slot:", roundBeginSlot);
+    console.log("Current Slot:", currentSlot);
     // Check if the current slot is within in 1 minute of the round begin slot
-    if (roundBeginSlot + 120 <= currentSlot) {
+    if (roundBeginSlot + 10 <= currentSlot) {
       // the all task states are fetched in parallel
       const getAllTaskStates = await getTaskState(getTaskList);
 

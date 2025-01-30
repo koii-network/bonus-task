@@ -3,56 +3,62 @@ import { getDataFromCID } from "../modules/getDataFromCID.js";
 
 const SLASH_PERCENT = 0.7;
 
-export async function distribution(submitters, bounty, roundNumber) {
+export async function distribution(roundNumber) {
   const distributionList = {};
 
-  const { distribution_proposal } = await namespaceWrapper.storeGet(
-    "dist_" + roundNumber,
-  );
+  try {
+    const { distribution_proposal } = await namespaceWrapper.storeGet(
+      "dist_" + roundNumber,
+    );
 
-  // Check current slot and Get the task state
-  const taskState = await namespaceWrapper.getTaskState({
-    is_submission_required: true,
-  });
+    // Check current slot and Get the task state
+    const taskState = await namespaceWrapper.getTaskState({
+      is_submission_required: true,
+    });
 
-  const { submissions } = taskState;
+    const { submissions } = taskState;
+    const currentSubmission = submissions[roundNumber];
 
-  const currentSubmission = submissions[roundNumber];
+    if (!currentSubmission) {
+      console.log("Key not found in submissions for round:", roundNumber);
+      return {};
+    }
 
-  if (!currentSubmission) {
-    console.log("Key not found in submissions.");
-    return {};
-  }
+    for (const key of Object.keys(currentSubmission)) {
+      const cid = currentSubmission[key].submission_value;
+      console.log(`Processing submission for ${key} with CID: ${cid}`);
 
-  for (const key of Object.keys(currentSubmission)) {
-    const cid = currentSubmission[key].submission_value;
-    console.log(`Fetching data for CID: ${cid}`);
+      try {
+        const cidData = await getDataFromCID("distribution_proposal.json", cid);
+        if (!cidData || !cidData.distribution_proposal || !cidData.distribution_proposal.getStakingKeys) {
+          console.log("Invalid or missing data in CID response");
+          continue;
+        }
 
-    try {
-      const cidData = await getDataFromCID("distribution_proposal.json", cid);
-      if (!cidData || !cidData.getStakingKeys) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const { getKoiiStakingKey, getKPLStakingKey } =
+          cidData.distribution_proposal.getStakingKeys;
+
+        console.log("Checking KPL wallet:", getKPLStakingKey);
+        console.log("Distribution proposal available:", Object.keys(distribution_proposal));
+
+        if (distribution_proposal.hasOwnProperty(getKPLStakingKey)) {
+          distributionList[getKoiiStakingKey] = distribution_proposal[getKPLStakingKey];
+          console.log(`Assigned ${distribution_proposal[getKPLStakingKey]} to ${getKoiiStakingKey}`);
+        } else {
+          console.log(`No distribution found for KPL wallet: ${getKPLStakingKey}`);
+        }
+
+      } catch (error) {
+        console.error("Error processing submission:", error.message);
         continue;
       }
-
-      const { getKoiiStakingKey, getKPLStakingKey } =
-        cidData.distribution_proposal.getStakingKeys;
-
-      if (distribution_proposal.hasOwnProperty(getKPLStakingKey)) {
-        distributionList[getKoiiStakingKey] =
-          distributionList[getKPLStakingKey];
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    } catch (error) {
-      console.log("ERROR GETTING DATA FROM CID IN DISTRIBUTION ", error);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      continue;
     }
+
+    console.log("Final distributionList:", distributionList);
+    return distributionList;
+    
+  } catch (error) {
+    console.error("Error in distribution function:", error.message);
+    return {};
   }
-
-  console.log("distributionList:", distributionList);
-
-  // Return the final distribution list
-  return {};
 }
