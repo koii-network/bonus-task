@@ -1,5 +1,5 @@
 import { namespaceWrapper } from "@_koii/namespace-wrapper";
-import { getDataFromCID } from "../modules/getDataFromCID";
+import { getDataFromCID } from "../modules/getDataFromCID.js";
 
 const SLASH_PERCENT = 0.7;
 
