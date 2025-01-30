@@ -167,7 +167,7 @@ async function getTaskState(taskList) {
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(
         () => reject(new Error("Timeout: Fetching tasks took too long")),
-        60000,
+        120000,
       ),
     );
 

@@ -26,7 +26,7 @@ export async function audit(submission, roundNumber, submitterKey) {
     const distribution_proposal =
       data.distribution_proposal.distribution_proposal;
 
-    console.log(getStakingKeys, distribution_proposal);
+    // console.log(getStakingKeys, distribution_proposal);
 
     if (!getStakingKeys.getKoiiStakingKey || !getStakingKeys.getKPLStakingKey) {
       console.log("No staking keys found in CID");
