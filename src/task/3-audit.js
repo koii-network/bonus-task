@@ -28,7 +28,7 @@ export async function audit(submission, roundNumber, submitterKey) {
 
     console.log(getStakingKeys, distribution_proposal);
 
-    if (!getStakingKeys.koiiPublicKey || !getStakingKeys.kplPublicKey) {
+    if (!getStakingKeys.getKoiiStakingKey || !getStakingKeys.getKPLStakingKey) {
       console.log("No staking keys found in CID");
       return false;
     }

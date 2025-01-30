@@ -112,7 +112,7 @@ environment: "TEST"
 #################################### FOR UPDATING TASKS ONLY ####################################
 
 ## Old Task ID ##
-task_id: "5TbA1forYREoNTVmEUMu4puL2d9fDLnBcxpphLu5RXxB"
+task_id: "25mf1f88Sgrsyyy1TZN4c67UAs5iTRPxhnaCbfAVPrVw"
 
 ## Migration Description ##
-migrationDescription: "Fix a check slot logic issue"
+migrationDescription: "Fix a check submission issue"
