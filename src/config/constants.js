@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-export const K2_URL = "https://testnet.koii.network";
+export const K2_URL = "https://mainnet.koii.network";
 export const DB_NAME = "migration";
 export const COLLECTION_NAME = "stakingwallets";
 export const DB_BATCH_SIZE = 500;

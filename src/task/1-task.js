@@ -74,10 +74,18 @@ export async function task(roundNumber) {
         if (user.submissions) {
           for (let submissionKey in user.submissions) {
             const getTaskSpecificWeight = getWeightList[submissionKey];
-            user.submissions[submissionKey] *= getTaskSpecificWeight;
+            if (typeof getTaskSpecificWeight === 'number' && !isNaN(getTaskSpecificWeight)) {
+              const originalValue = user.submissions[submissionKey];
+              user.submissions[submissionKey] *= getTaskSpecificWeight;
+            } else {
+              console.warn(`Missing or invalid weight for task ${submissionKey}`);
+              user.submissions[submissionKey] *= 1;
+            }
           }
         }
       }
+
+      // console.log('Users object before reward calculation:', JSON.stringify(users, null, 2));
 
       const distribution_proposal = await calculateRewards(
         users,
@@ -126,6 +134,7 @@ async function getTaskState(taskList) {
   try {
     const fetchPromises = taskList.map(async (task) => {
       try {
+        console.log("task", task);
         const result = await namespaceWrapper.getTaskStateById(
           task.id,
           task.type,
@@ -135,7 +144,7 @@ async function getTaskState(taskList) {
             is_submission_required: true,
           },
         );
-
+        // console.log("result", result);
         if (!result || result.data === null) {
           console.error(`Task ID ${task.id} returned null data.`);
           return null;

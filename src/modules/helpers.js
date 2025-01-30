@@ -21,7 +21,7 @@ async function getUnclaimedRewards(taskState) {
     output[wallet_key] = rewards_portion;
     rewardsPortionTotal += rewards_portion;
   }
-  console.log("rewards_portion", rewardsPortionTotal);
+  // console.log("rewards_portion", rewardsPortionTotal);
 
   return { all: output, sum: totalUnclaimed };
 }
@@ -48,11 +48,18 @@ async function calculateRewards(users, totalReward) {
 
   // Calculate weights
   for (const user in users) {
-    userWeights[user] = calculateWeight(users[user]);
-    totalWeight += userWeights[user];
+    const weight = calculateWeight(users[user]);
+    userWeights[user] = weight;
+    totalWeight += weight;
   }
 
-  console.log("totalWeight: ", totalWeight / 1e9);
+  console.log("Total reward:", totalReward);
+
+  // Validate totalWeight to prevent division by zero
+  if (totalWeight === 0) {
+    console.error("Total weight is 0, cannot calculate rewards");
+    return {};
+  }
 
   // Calculate rewards based on weights and total reward
   const rewards = {};
@@ -70,29 +77,38 @@ function calculateWeight(user, alpha = 0.5) {
   let submissionWeight = 0;
   let developerBonus = 0;
 
-  // Sum submissions
-  if (user.submissions) {
+  // Sum submissions with validation
+  if (user.submissions && typeof user.submissions === 'object') {
     for (const task in user.submissions) {
-      submissionWeight += user.submissions[task];
+      const submission = user.submissions[task];
+      if (typeof submission === 'number' && !isNaN(submission)) {
+        submissionWeight += submission;
 
-      // Developer bonus
-      if (user.developerOf && user.developerOf[task] === true) {
-        developerBonus += 0.5 * user.submissions[task];
+        // Developer bonus
+        if (user.developerOf && user.developerOf[task] === true) {
+          const bonus = 0.5 * submission;
+          developerBonus += bonus;
+        }
       }
     }
   }
 
-  // Sum stakes
-  if (user.stakes) {
+  // Sum stakes with validation
+  if (user.stakes && typeof user.stakes === 'object') {
     for (const task in user.stakes) {
-      stakeWeight += user.stakes[task];
+      const stake = user.stakes[task];
+      if (typeof stake === 'number' && !isNaN(stake)) {
+        stakeWeight += stake;
+      }
     }
   }
 
-  // Final weight calculation
-  return Math.floor(
-    alpha * stakeWeight + beta * (submissionWeight + developerBonus) * 1e9,
+  // Final weight calculation with validation
+  const finalWeight = Math.floor(
+    alpha * stakeWeight + beta * (submissionWeight + developerBonus) * 1e9
   );
+
+  return finalWeight;
 }
 
 export { checkSumTally, calculateRewards };

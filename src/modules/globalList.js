@@ -8,7 +8,7 @@ let taskList = [
     type: "KPL",
   },
   {
-    id: "7BBKnthEGMnc5pfixTJu7FwkmuTt99naFd8NsRMsaEYh", //Free Fire Task
+    id: "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M", //Free Fire Task
     type: "KPL",
   },
   {
@@ -22,7 +22,7 @@ let taskList = [
 ];
 let weighting_factors = {
   HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A: 0.3, // Mask Task
-  "7BBKnthEGMnc5pfixTJu7FwkmuTt99naFd8NsRMsaEYh": 0.2, // Free Token Task
+  "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M": 0.2, // Free Token Task
   AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy: 0.3, // BIGBIG
   "3BXESVkbTou7ZNSXwTFrGoqkFa79FondJZZ5uRag3tiZ": 0.2, // Truflation
 };
