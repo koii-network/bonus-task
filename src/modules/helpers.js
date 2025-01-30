@@ -52,10 +52,12 @@ async function calculateRewards(users, totalReward) {
     totalWeight += userWeights[user];
   }
 
+  console.log("totalWeight: ", totalWeight / 1e9);
+
   // Calculate rewards based on weights and total reward
   const rewards = {};
   for (const user in users) {
-    rewards[user] = (userWeights[user] / totalWeight) * totalReward;
+    rewards[user] = Math.floor((userWeights[user] / totalWeight) * totalReward);
   }
 
   return rewards;
@@ -88,7 +90,9 @@ function calculateWeight(user, alpha = 0.5) {
   }
 
   // Final weight calculation
-  return alpha * stakeWeight + beta * (submissionWeight + developerBonus);
+  return Math.floor(
+    alpha * stakeWeight + beta * (submissionWeight + developerBonus) * 1e9,
+  );
 }
 
 export { checkSumTally, calculateRewards };

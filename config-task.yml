@@ -25,7 +25,7 @@ repositoryUrl: "https://github.com/koii-network/task-template"
 
 ## Image URL ##
 # 230x86 pixels.
-imageUrl: "imageUrl"
+imageUrl: "https://bafybeibl64tnmgusajxth6odilsokck6pmqvrsmdwfzo4g2qen2g2mcfv4.ipfs.w3s.link/Bonustask.png"
 
 ## Info URL ##
 infoUrl: "infoUrl"
@@ -62,11 +62,11 @@ minimum_stake_amount: 0.1
 
 ## Task Bounty Type ##
 # KOII or KPL
-task_type: "KPL"
+task_type: "KOII"
 
 ## Token Mint Address (ONLY for KPL tasks) ##
 # The Fire Token address is provided as an example.
-token_type: "FJG2aEPtertCXoedgteCCMmgngSZo1Zd715oNBzR7xpR"
+token_type: ""
 
 ## Total Bounty Amount ##
 # The total bounty amount that will be available for distribution over all rounds.
@@ -99,13 +99,10 @@ requirementsTags:
     value: "5 GB"
   - type: STORAGE
     value: "5 GB"
-  - type: TASK_VARIABLE
-    value: "TEST_VARIABLE"
-    description: "An example to demonstrate the use of task variables."
 
 ## Tags ##
 # See https://www.koii.network/docs/develop/command-line-tool/create-task-cli/create-task#tags for available tag options.
-tags: ["Witness"]
+tags: []
 
 # Environment ##
 # TEST or PRODUCTION

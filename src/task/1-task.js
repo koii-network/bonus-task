@@ -17,86 +17,101 @@ export async function task(roundNumber) {
     const getTaskList = taskList;
     const getWeightList = weighting_factors;
 
-    // the all task states are fetched in parallel
-    const getAllTaskStates = await getTaskState(getTaskList);
+    // Check current slot and Get the task state
+    const taskState = await namespaceWrapper.getTaskState({});
+    const roundBeginSlot =
+      taskState.starting_slot + roundNumber * taskState.round_time;
 
-    const users = {};
+    const currentSlot = await namespaceWrapper.getSlot();
+    // Check if the current slot is within in 1 minute of the round begin slot
+    if (roundBeginSlot + 120 <= currentSlot) {
+      // the all task states are fetched in parallel
+      const getAllTaskStates = await getTaskState(getTaskList);
 
-    for (const taskStates of getAllTaskStates) {
-      const { taskId } = taskStates;
-      const { submissions, stake_list, task_manager } = taskStates.data;
+      const users = {};
 
-      // submission weights and only get the last five submissions
-      const lastFiveKeys = Object.keys(submissions)
-        .map(Number)
-        .sort((a, b) => a - b)
-        .slice(-5);
+      for (const taskStates of getAllTaskStates) {
+        const { taskId } = taskStates;
+        const { submissions, stake_list, task_manager } = taskStates.data;
 
-      // get the sum of all the submission weights
-      for (const lastFiveKey of lastFiveKeys) {
-        const submission = submissions[`${lastFiveKey}`];
+        // submission weights and only get the last five submissions
+        const lastFiveKeys = Object.keys(submissions)
+          .map(Number)
+          .sort((a, b) => a - b)
+          .slice(-5);
 
-        // kpl staking key
-        for (const itemKey of Object.keys(submission)) {
-          if (stake_list.hasOwnProperty(itemKey)) {
-            if (!users[itemKey]) {
-              users[itemKey] = {
-                submissions: {},
-                stakes: {},
-                developerOf: {},
-              };
+        // get the sum of all the submission weights
+        for (const lastFiveKey of lastFiveKeys) {
+          const submission = submissions[`${lastFiveKey}`];
+
+          // kpl staking key
+          for (const itemKey of Object.keys(submission)) {
+            if (stake_list.hasOwnProperty(itemKey)) {
+              if (!users[itemKey]) {
+                users[itemKey] = {
+                  submissions: {},
+                  stakes: {},
+                  developerOf: {},
+                };
+              }
+
+              users[itemKey].submissions[taskId] =
+                (users[itemKey].submissions[taskId] || 0) + 1;
+              users[itemKey].stakes[taskId] = stake_list[itemKey] / 1e9;
             }
+          }
+        }
 
-            users[itemKey].submissions[taskId] =
-              (users[itemKey].submissions[taskId] || 0) + 1;
-            users[itemKey].stakes[taskId] = stake_list[itemKey] / 1e9;
+        // developer key and task id
+        // const developer_key = await bs58.encode(task_manager);
+        // console.log(developer_key);
+      }
+
+      for (let stakingKey in users) {
+        let user = users[stakingKey];
+        if (user.submissions) {
+          for (let submissionKey in user.submissions) {
+            const getTaskSpecificWeight = getWeightList[submissionKey];
+            user.submissions[submissionKey] *= getTaskSpecificWeight;
           }
         }
       }
 
-      // developer key and task id
-      // const developer_key = await bs58.encode(task_manager);
-      // console.log(developer_key);
+      const distribution_proposal = await calculateRewards(
+        users,
+        REWARD_PER_ROUND,
+      );
+
+      const total_node_bonus = Object.values(distribution_proposal).reduce(
+        (a, b) => a + b,
+        0,
+      );
+      console.log("total_node_bonus:", total_node_bonus / 1e9);
+
+      // get both kpl and koii staking key
+      const getKoiiStakingKey =
+        await namespaceWrapper.getSubmitterAccount("KOII");
+      const getKPLStakingKey =
+        await namespaceWrapper.getSubmitterAccount("KPL");
+
+      const koiiPublicKey = getKoiiStakingKey.publicKey.toBase58();
+      const kplPublicKey = getKPLStakingKey.publicKey.toBase58();
+
+      const getStakingKeys = {
+        getKoiiStakingKey: koiiPublicKey,
+        getKPLStakingKey: kplPublicKey,
+      };
+
+      await namespaceWrapper.storeSet("dist_" + roundNumber, {
+        getStakingKeys,
+        distribution_proposal,
+      });
+    } else {
+      console.log(
+        "Task missed the window to be executed, skip round",
+        roundNumber,
+      );
     }
-
-    for (let stakingKey in users) {
-      let user = users[stakingKey];
-      if (user.submissions) {
-        for (let submissionKey in user.submissions) {
-          const getTaskSpecificWeight = getWeightList[submissionKey];
-          user.submissions[submissionKey] *= getTaskSpecificWeight;
-        }
-      }
-    }
-
-    const distribution_proposal = await calculateRewards(
-      users,
-      REWARD_PER_ROUND,
-    );
-
-    const total_node_bonus = Object.values(distribution_proposal).reduce(
-      (a, b) => a + b,
-      0,
-    );
-    console.log("total_node_bonus:", total_node_bonus);
-
-    // get both kpl and koii staking key
-    const getKoiiStakingKey =
-      await namespaceWrapper.getSubmitterAccount("KOII");
-    const getKPLStakingKey = await namespaceWrapper.getSubmitterAccount("KPL");
-
-    const koiiPublicKey = getKoiiStakingKey.publicKey.toBase58();
-    const kplPublicKey = getKPLStakingKey.publicKey.toBase58();
-
-    const getStakingKeys = {
-      getKoiiStakingKey: koiiPublicKey,
-      getKPLStakingKey: kplPublicKey,
-    };
-
-    await namespaceWrapper.storeSet("dist_" + roundNumber, {
-      getStakingKeys,
-      distribution_proposal,
-    });
   } catch (error) {
     console.error("EXECUTE TASK ERROR:", error);
   }
