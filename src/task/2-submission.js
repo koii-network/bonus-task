@@ -14,6 +14,22 @@ export async function submission(roundNumber) {
       "dist_" + roundNumber,
     );
 
+    const { distribution_proposal, getStakingKeys } = get_distribution_proposal;
+
+    console.log(
+      "distribution_proposal, getStakingKeys",
+      distribution_proposal,
+      getStakingKeys,
+    );
+
+    if (
+      !distribution_proposal ||
+      Object.keys(distribution_proposal).length === 0 ||
+      !getStakingKeys
+    ) {
+      return "";
+    }
+
     const getFilePath = await storeInFile({
       distribution_proposal: get_distribution_proposal,
     });

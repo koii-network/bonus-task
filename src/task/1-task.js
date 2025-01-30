@@ -108,6 +108,9 @@ export async function task(roundNumber) {
         getStakingKeys,
         distribution_proposal,
       });
+
+      let checkSumTotal = await checkSumTally(distribution_proposal);
+      console.log("checkSumTotal", checkSumTotal);
     } else {
       console.log(
         "Task missed the window to be executed, skip round",
