@@ -29,7 +29,7 @@ export async function distribution(submitters, bounty, roundNumber) {
     console.log(`Fetching data for CID: ${cid}`);
 
     try {
-      const cidData = await getDataFromCID(cid);
+      const cidData = await getDataFromCID("distribution_proposal.json", cid);
       if (!cidData || !cidData.getStakingKeys) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
         continue;
