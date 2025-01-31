@@ -3,99 +3,62 @@ import { getDataFromCID } from "../modules/getDataFromCID.js";
 
 const SLASH_PERCENT = 0;
 
-export async function distribution(submitters, bounty, roundNumber) {
-  try {
-    console.log(`MAKE DISTRIBUTION LIST FOR ROUND ${roundNumber}`);
-
-    // Initialize an empty object to store the final distribution list
-    const distributionList = {};
+export function distribution(submitters, bounty, roundNumber) {
+  return new Promise(async (resolve) => {
+    try {
+      console.log(`MAKE DISTRIBUTION LIST FOR ROUND ${roundNumber}`);
+      const distributionList = {};
+      const approvedSubmitters = [];
   
-    // Initialize an empty array to store the public keys of submitters with correct values
-    const approvedSubmitters = [];
-  
-    // Iterate through the list of submitters and handle each one
-    for (const submitter of submitters) {
-      // If the submitter's votes are 0, they do not get any reward
-      if (submitter.votes === 0) {
-        distributionList[submitter.publicKey] = 0;
-  
-        // If the submitter's votes are negative (submitted incorrect values), slash their stake
-      } else if (submitter.votes < 0) {
-        // Slash the submitter's stake by the defined percentage
-        const slashedStake = Math.floor(submitter.stake * SLASH_PERCENT);
-        // Add the slashed amount to the distribution list
-        // since the stake is positive, we use a negative value to indicate a slash
-        distributionList[submitter.publicKey] = -slashedStake;
-  
-        // Log that the submitter's stake has been slashed
-        console.log("CANDIDATE STAKE SLASHED", submitter.publicKey, slashedStake);
-  
-        // If the submitter's votes are positive, add their public key to the approved submitters list
-      } else {
-        approvedSubmitters.push(submitter.publicKey);
-      }
-    }
-  
-    // If no submitters submitted correct values, return the current distribution list
-    if (approvedSubmitters.length === 0) {
-      console.log("NO NODES TO REWARD");
-      return distributionList;
-    }
-
-    const { distribution_proposal } = await namespaceWrapper.storeGet(
-      "dist_" + roundNumber,
-    );
-    console.log("distribution_proposal to check in distribution round", distribution_proposal);
-
-    const taskState = await namespaceWrapper.getTaskState({
-      is_submission_required: true,
-    });
-
-    const { submissions } = taskState;
-    const currentSubmission = submissions[roundNumber];
-
-    console.log("Get currentSubmission", currentSubmission);
-    
-    if (!currentSubmission) {
-      console.log("Key not found in submissions for round:", roundNumber);
-      return {};
-    }
-
-    for (const key of Object.keys(currentSubmission)) {
-      const cid = currentSubmission[key].submission_value;
-      console.log(`Processing submission for ${key} with CID: ${cid}`);
-
-      try {
-        const cidData = await getDataFromCID("distribution_proposal.json", cid);
-        if (!cidData || !cidData.distribution_proposal || !cidData.distribution_proposal.getStakingKeys) {
-          console.log("Invalid or missing data in CID response");
-          continue;
-        }
-
-        const { getKoiiStakingKey, getKPLStakingKey } =
-          cidData.distribution_proposal.getStakingKeys;
-
-        console.log("Checking KPL wallet:", getKPLStakingKey);
-        // console.log("Distribution proposal available:", Object.keys(distribution_proposal));
-
-        if (distribution_proposal.hasOwnProperty(getKPLStakingKey)) {
-          distributionList[getKoiiStakingKey] = distribution_proposal[getKPLStakingKey];
-          console.log(`Assigned ${distribution_proposal[getKPLStakingKey]} to ${getKoiiStakingKey}`);
+      for (const submitter of submitters) {
+        if (submitter.votes === 0) {
+          distributionList[submitter.publicKey] = 0;
+        } else if (submitter.votes < 0) {
+          const slashedStake = Math.floor(submitter.stake * SLASH_PERCENT);
+          distributionList[submitter.publicKey] = -slashedStake;
+          console.log("CANDIDATE STAKE SLASHED", submitter.publicKey, slashedStake);
         } else {
-          console.log(`No distribution found for KPL wallet: ${getKPLStakingKey}`);
+          approvedSubmitters.push(submitter.publicKey);
         }
-
-      } catch (error) {
-        console.error("Error processing submission:", error.message);
-        continue;
       }
-    }
+  
+      if (approvedSubmitters.length === 0) {
+        console.log("NO NODES TO REWARD");
+        resolve(distributionList);
+        return;
+      }
 
-    console.log("Final distributionList:", distributionList);
-    return distributionList;
-    
-  } catch (error) {
-    console.error("Error in distribution function:", error.message);
-    return {};
-  }
+      const { distribution_proposal } = await namespaceWrapper.storeGet("dist_" + roundNumber);
+      const taskState = await namespaceWrapper.getTaskState({ is_submission_required: true });
+      const currentSubmission = taskState.submissions[roundNumber];
+
+      if (!currentSubmission) {
+        console.log("Key not found in submissions for round:", roundNumber);
+        resolve({});
+        return;
+      }
+
+      for (const key of Object.keys(currentSubmission)) {
+        try {
+          const cid = currentSubmission[key].submission_value;
+          const cidData = await getDataFromCID("distribution_proposal.json", cid);
+          
+          if (!cidData?.distribution_proposal?.getStakingKeys) continue;
+
+          const { getKoiiStakingKey, getKPLStakingKey } = cidData.distribution_proposal.getStakingKeys;
+
+          if (distribution_proposal.hasOwnProperty(getKPLStakingKey)) {
+            distributionList[getKoiiStakingKey] = distribution_proposal[getKPLStakingKey];
+          }
+        } catch (error) {
+          console.error("Error processing submission:", error.message);
+        }
+      }
+
+      resolve(distributionList);
+    } catch (error) {
+      console.error("Error in distribution function:", error.message);
+      resolve({});
+    }
+  });
 }
