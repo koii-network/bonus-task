@@ -82,7 +82,8 @@ export async function distribution(submitters, bounty, roundNumber) {
           distributionList[getKoiiStakingKey] = distribution_proposal[getKPLStakingKey];
           console.log(`Assigned ${distribution_proposal[getKPLStakingKey]} to ${getKoiiStakingKey}`);
         } else {
-          console.log(`No distribution found for KPL wallet: ${getKPLStakingKey}`);
+          console.log(`KPL wallet not found in distribution_proposal: ${getKPLStakingKey}`);
+          distributionList[getKoiiStakingKey] = 0;
         }
 
       } catch (error) {
