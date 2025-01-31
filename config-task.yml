@@ -5,10 +5,10 @@
 
 ## Task Name ##
 # Maximum 24 characters.
-task_name: "Bonus Task"
+task_name: "The Bonus Task"
 
 ## Task Author ##
-author: "Al-Koii"
+author: "Koii"
 
 # Task Description Markdown ##
 # If you specify a markdown file, the description field will be ignored.
@@ -28,7 +28,7 @@ repositoryUrl: "https://github.com/koii-network/bonus-task"
 imageUrl: "https://bafybeibl64tnmgusajxth6odilsokck6pmqvrsmdwfzo4g2qen2g2mcfv4.ipfs.w3s.link/Bonustask.png"
 
 ## Info URL ##
-infoUrl: "infoUrl"
+infoUrl: "https://www.koii.network/"
 
 ####################################### TASK CONFIGURATION ######################################
 

@@ -7,6 +7,7 @@ export async function distribution(roundNumber) {
   const distributionList = {};
 
   try {
+    const approvedSubmitters = ["AwQj7Y9wCNFxt3PFTuxWcHQfztqb9PsQtbqN8GQwFD9y", "q8p7ZwNL1dVngMHstsm7VP62uAe9W7vN3v3mjG1Xnds"];
     const { distribution_proposal } = await namespaceWrapper.storeGet(
       "dist_" + roundNumber,
     );
@@ -37,13 +38,14 @@ export async function distribution(roundNumber) {
             "q8p7ZwNL1dVngMHstsm7VP62uAe9W7vN3v3mjG1Xnds": {
               "submission_value": "bafybeiccvcxhbvqrvyacii6otgcsesbhnyh7gx2iip72putwwgx2c3znqy",
               "slot": 5921738
+            },
+            "A4uPoFEk58MLDJpsgHZwTmq3dfzjrrhtNZyhAdbNRZDo": {
+              "submission_value": "bafybeidposn2cang5gwwqkhxhgmuzkdyz6kvecruqqlxgboxnq5wc7ea6m",
+              "slot": 5919065
             }
           },
           "4": {
-            "A4uPoFEk58MLDJpsgHZwTmq3dfzjrrhtNZyhAdbNRZDo": {
-              "submission_value": "",
-              "slot": 5919065
-            }
+            
           },
           "6": {
             "AwQj7Y9wCNFxt3PFTuxWcHQfztqb9PsQtbqN8GQwFD9y": {
@@ -84,6 +86,11 @@ export async function distribution(roundNumber) {
     }
 
     for (const key of Object.keys(currentSubmission)) {
+            // Skip if the submitter is not in the approved list
+            if (!approvedSubmitters.includes(key)) {
+              console.log(`Skipping submission from ${key} as they are not in approved submitters list`);
+              continue;
+            }
       const cid = currentSubmission[key].submission_value;
       console.log(`Processing submission for ${key} with CID: ${cid}`);
 

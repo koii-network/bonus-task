@@ -62,6 +62,12 @@ export async function distribution(submitters, bounty, roundNumber) {
     }
 
     for (const key of Object.keys(currentSubmission)) {
+      // Skip if the submitter is not in the approved list
+      if (!approvedSubmitters.includes(key)) {
+        console.log(`Skipping submission from ${key} as they are not in approved submitters list`);
+        continue;
+      }S
+      
       const cid = currentSubmission[key].submission_value;
       console.log(`Processing submission for ${key} with CID: ${cid}`);
 
