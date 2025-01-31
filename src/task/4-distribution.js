@@ -75,15 +75,21 @@ export async function distribution(submitters, bounty, roundNumber) {
         const { getKoiiStakingKey, getKPLStakingKey } =
           cidData.distribution_proposal.getStakingKeys;
 
+        console.log("Checking KOII wallet:", getKoiiStakingKey);
         console.log("Checking KPL wallet:", getKPLStakingKey);
-        // console.log("Distribution proposal available:", Object.keys(distribution_proposal));
+        console.log("The number of distribution proposal available:", Object.keys(distribution_proposal).length);
 
-        if (distribution_proposal.hasOwnProperty(getKPLStakingKey)) {
-          distributionList[getKoiiStakingKey] = distribution_proposal[getKPLStakingKey];
-          console.log(`Assigned ${distribution_proposal[getKPLStakingKey]} to ${getKoiiStakingKey}`);
+        // Check if either KPL or KOII staking wallet exists in distribution_proposal
+        const kplBounty = distribution_proposal[getKPLStakingKey] || 0;
+        const koiiBounty = distribution_proposal[getKoiiStakingKey] || 0;
+        const currentBounty = Math.max(kplBounty, koiiBounty);
+
+        if (currentBounty > 0) {
+            distributionList[getKoiiStakingKey] = currentBounty;
+            console.log(`Assigned highest bounty ${currentBounty} to KOII wallet ${getKoiiStakingKey} (KPL: ${kplBounty}, KOII: ${koiiBounty})`);
         } else {
-          console.log(`KPL wallet not found in distribution_proposal: ${getKPLStakingKey}`);
-          distributionList[getKoiiStakingKey] = 0;
+            distributionList[getKoiiStakingKey] = 0;
+            console.log(`No bounty found for either KPL wallet ${getKPLStakingKey} or KOII wallet ${getKoiiStakingKey}`);
         }
 
       } catch (error) {
