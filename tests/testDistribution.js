@@ -97,7 +97,7 @@ export async function distribution(roundNumber) {
           cidData.distribution_proposal.getStakingKeys;
 
         console.log("Checking KPL wallet:", getKPLStakingKey);
-        console.log("Distribution proposal available:", Object.keys(distribution_proposal));
+        console.log("The number of distribution proposal available:", Object.keys(distribution_proposal).length);
 
         if (distribution_proposal.hasOwnProperty(getKPLStakingKey)) {
           distributionList[getKoiiStakingKey] = distribution_proposal[getKPLStakingKey];

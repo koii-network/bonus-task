@@ -18,7 +18,7 @@ export async function submission(roundNumber) {
 
     console.log(
       "distribution_proposal, getStakingKeys",
-      distribution_proposal.length,
+      Object.keys(distribution_proposal).length,
       getStakingKeys,
     );
 

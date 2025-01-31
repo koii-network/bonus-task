@@ -45,7 +45,7 @@ export async function distribution(submitters, bounty, roundNumber) {
     const { distribution_proposal } = await namespaceWrapper.storeGet(
       "dist_" + roundNumber,
     );
-    console.log("The number of distribution_proposal to check in distribution round", distribution_proposal.length);
+    console.log("The number of distribution_proposal to check in distribution round:", Object.keys(distribution_proposal).length);
 
     const taskState = await namespaceWrapper.getTaskState({
       is_submission_required: true,
