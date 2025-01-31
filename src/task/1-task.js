@@ -3,7 +3,7 @@ import { PublicKey } from "@_koii/web3.js";
 import { calculateRewards, checkSumTally } from "../modules/helpers.js";
 import bs58 from "bs58";
 import { REWARD_PER_ROUND } from "../config/constants.js";
-import { taskList, weighting_factors } from "../modules/globalList.js";
+import { taskList, weighting_factors, developerKey } from "../modules/globalList.js";
 
 export async function task(roundNumber) {
   /**
@@ -16,6 +16,7 @@ export async function task(roundNumber) {
 
     const getTaskList = taskList;
     const getWeightList = weighting_factors;
+    const getDeveloperKey = developerKey;
 
     // Check current slot and Get the task state
     const taskState = await namespaceWrapper.getTaskState({});
@@ -61,6 +62,27 @@ export async function task(roundNumber) {
                 (users[itemKey].submissions[taskId] || 0) + 1;
               users[itemKey].stakes[taskId] = stake_list[itemKey] / 1e9;
             }
+          }
+        }
+
+        const developerKey = await bs58.encode(task_manager);
+        if (getDeveloperKey[developerKey]) {
+          const getTaskId = Object.keys(getDeveloperKey[developerKey])[0];
+          if (getTaskId === taskId) {
+            const kplStakingKey = getDeveloperKey[developerKey][getTaskId].getKPLStakingKey;
+            if (!users[kplStakingKey]) {
+              users[kplStakingKey] = {
+                submissions: {},
+                stakes: {},
+                developerOf: {},
+              };
+              // Initialize submissions and stakes for this task
+              if (stake_list[kplStakingKey]) {
+                users[kplStakingKey].stakes[taskId] = stake_list[kplStakingKey] / 1e9;
+              }
+            }
+            users[kplStakingKey].developerOf[taskId] = true;
+            console.log(`Developer bonus set for ${kplStakingKey} on task ${taskId}`);
           }
         }
 

@@ -16,15 +16,31 @@ let taskList = [
     type: "KPL",
   },
   {
-    id: "3BXESVkbTou7ZNSXwTFrGoqkFa79FondJZZ5uRag3tiZ", // Truflation
+    id: "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH", // Truflation
     type: "KPL",
+  },
+  {
+    id: "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL", // [BETA]ArK:Dangerous Dave
+    type: "KOII",
   },
 ];
 let weighting_factors = {
-  HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A: 0.3, // Mask Task
+  HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A: 0.2, // Mask Task
   "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M": 0.2, // Free Token Task
-  AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy: 0.3, // BIGBIG
-  "3BXESVkbTou7ZNSXwTFrGoqkFa79FondJZZ5uRag3tiZ": 0.2, // Truflation
+  AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy: 0.2, // BIGBIG
+  "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH": 0.2, // Truflation
+  "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL": 0.2, // [BETA]ArK:Dangerous Dave
+};
+
+let developerKey = {
+  // system key
+  HkvGCWS9KprczB4iCwq1ApQTyo7QjyWPrKRP5cQMaqj3: {
+    // task id
+    "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL": {
+      getKoiiStakingKey: "Gxrzpce2FquJMom5EtHEN8fciULNEeHmBocd3d6zGFmz",
+      getKPLStakingKey: "6nUQFLuEzVXr5xLeHqh9b7GvqaCTFp16UJi4bVwF4dWi",
+    },
+  },
 };
 
 // // FOR THE TESTNET
@@ -53,4 +69,4 @@ let weighting_factors = {
 //   D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv: 0.2, // Truflation
 // };
 
-export { taskList, weighting_factors };
+export { taskList, weighting_factors, developerKey };
