@@ -2,7 +2,7 @@
 
 We've worked tirelessly as a team to bring the Koii Token to life, and now it's time to push forward toward a stable, thriving network! 🚀
 
-## Why This Bonus?
+## Why The Bonus?
 
 - Your node powers the network, and we see your effort!
 - This is our way of rewarding your consistency—a little treat for keeping things running smoothly.
