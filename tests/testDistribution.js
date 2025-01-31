@@ -31,8 +31,12 @@ export async function distribution(roundNumber) {
         {
           "0": {
             "AwQj7Y9wCNFxt3PFTuxWcHQfztqb9PsQtbqN8GQwFD9y": {
-              "submission_value": "bafybeib2npqjx4tafalyv3kpx3evtffdy2t5rkrujkbxzbdeayevprdiqi",
+              "submission_value": "bafybeifcrqbofdm2rpqogmbtkjpqlwepma6mfj77wrmwh5bqlxi6moclde",
               "slot": 5914414
+            },
+            "q8p7ZwNL1dVngMHstsm7VP62uAe9W7vN3v3mjG1Xnds": {
+              "submission_value": "bafybeiccvcxhbvqrvyacii6otgcsesbhnyh7gx2iip72putwwgx2c3znqy",
+              "slot": 5921738
             }
           },
           "4": {
@@ -46,10 +50,7 @@ export async function distribution(roundNumber) {
               "submission_value": "bafybeidposn2cang5gwwqkhxhgmuzkdyz6kvecruqqlxgboxnq5wc7ea6m",
               "slot": 5921708
             },
-            "q8p7ZwNL1dVngMHstsm7VP62uAe9W7vN3v3mjG1Xnds": {
-              "submission_value": "bafybeiccvcxhbvqrvyacii6otgcsesbhnyh7gx2iip72putwwgx2c3znqy",
-              "slot": 5921738
-            }
+            
           }
         },
       submissions_audit_trigger: {},
@@ -104,6 +105,7 @@ export async function distribution(roundNumber) {
           console.log(`Assigned ${distribution_proposal[getKPLStakingKey]} to ${getKoiiStakingKey}`);
         } else {
           console.log(`No distribution found for KPL wallet: ${getKPLStakingKey}`);
+          distributionList[getKoiiStakingKey] = 0;
         }
 
       } catch (error) {
