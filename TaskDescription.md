@@ -1,27 +1,22 @@
 # 🎉 Bonus Task: Power Up & Earn!
 
-We've worked tirelessly as a team to bring the Koii Token to life, and now it's time to push forward toward a stable, thriving network! 🚀
+Get $KOII when you support new Tasks and mine KPL Tokens!
+
+The Koii Foundation has allocated 50,000 KOII per day to reward you when you support new tokens.
 
 ## Why The Bonus?
 
-- Your node powers the network, and we see your effort!
-- This is our way of rewarding your consistency—a little treat for keeping things running smoothly.
-- Exciting updates are on the horizon, and your role is key!
+When new projects and tokens launch on Koii, they need a bit of a boost until their tokens hit the market.
 
-## How to Earn?
+In order to support these new launches, and make sure developers get access to lots of nodes right away, the bonus task will issue $KOII rewards on top of the normal rewards from new tasks.
 
-✅ Keep your node online  
-✅ Stay active, support the network  
-✅ Claim your bonus—it's that simple!
+## Which Tasks are Eligible?
 
-## How it works
+Run these tasks to earn your bonus:
+- Mask Social Feeds
+- Free Fire Task
+- Big Big Task
+- Inflation Monitoring
+- ArK: Dangerous Dave Task
 
-Rewards are distributed based on your node's weight in the network:
-- **Task Participation**: Each successful task execution increases your weight
-- **Stake Amount**: Your staked KOII tokens contribute to your weight
-
-**Reward Distribution**: 500 KOII are distributed every 15 minutes to all participating nodes proportionally to their weights. The higher your weight (from participation and stake), the larger share of the 500 KOII reward you'll receive.
-
-This weight-based system ensures fair distribution based on both your active participation and network commitment.
-
-Let's elevate to the moon together! 🌕🚀
+We will soon incorporate voting to determine which tasks are eligible for the bonus, so be sure to keep your node staked on the Bonus Task to build up voting power. The longer you stake, the more voting power you'll have.
