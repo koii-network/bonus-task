@@ -15,3 +15,5 @@ taskStateInfoKeypair.json
 localKOIIDB.db
 metadata.json
 .npmrc
+./distribution_proposal.json
+distribution_proposal.json

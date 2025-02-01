@@ -1,122 +1,208 @@
 import { namespaceWrapper } from "@_koii/namespace-wrapper";
-import getTaskList from "../modules/getTaskList.js";
-import { Connection, PublicKey } from "@_koii/web3.js";
-import { retryWithMaxCount } from "../modules/retryWithMaxCount.js";
-import { harmonizeDistribution, getUnclaimedRewards, checkSumTally } from "../modules/helpers.js";
-import bs58 from 'bs58';
-
-import {
-	K2_URL,
-  REWARD_PER_ROUND
-} from "../config/constants.js";
+import { PublicKey } from "@_koii/web3.js";
+import { calculateRewards, checkSumTally } from "../modules/helpers.js";
+import bs58 from "bs58";
+import { REWARD_PER_ROUND } from "../config/constants.js";
+import { taskList, weighting_factors, developerKey } from "../modules/globalList.js";
 
 export async function task(roundNumber) {
   /**
-   * Execute the task for the given round
-   * Must return a string of max 512 bytes to be submitted on chain
+   * Run your task and store the proofs to be submitted for auditing
+   * The submission of the proofs is done in the submission function
    */
   try {
     console.log(`EXECUTE TASK FOR ROUND ${roundNumber}`);
     // you can optionally return this value to be used in debugging
 
-    // let connection = new Connection(K2_URL);
-    let distribution_proposal = [];
+    const getTaskList = taskList;
+    const getWeightList = weighting_factors;
+    const getDeveloperKey = developerKey;
 
-    // the weighting factors are stored in array formatted with the taskId as the key, and the weighting factor as the value, the sum of all weighting factors should equal 1
-    // eventually, these factors will be decided by a public vote of anyone running this task
-    let taskList = [
-      {
-        id : "E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr",
-        type : "KOII"
-      },
-      {
-        id : "GX5dfxY5Ns82KZrJX4a8bBw3a6WMPHJ3sBxmycfoXR2Y",
-        type : "KOII"
-      },
-      {
-        id : "KiwDeyqgkC8bgKgXkBLa4qQ2honuBB4Zu152C6Ggb9J",
-        type: "KOII"
-      },
-      {
-        id : "D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv",
-        type : "KOII"
-      }
-    ]
-    let weighting_factors = {
-      "E5ThjNUEYoe3bnwAhq2m3v9PK5SeiVNn8PTgaQL5zpvr" : 0.3, // Mask Task
-      "GX5dfxY5Ns82KZrJX4a8bBw3a6WMPHJ3sBxmycfoXR2Y" : 0.2, // Free Token Task
-      "KiwDeyqgkC8bgKgXkBLa4qQ2honuBB4Zu152C6Ggb9J" : 0.3, // BIGBIG
-      "D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv" : 0.2 // Truflation
-    };
+    // Check current slot and Get the task state
+    const taskState = await namespaceWrapper.getTaskState({});
+    const roundBeginSlot =
+      taskState.starting_slot + roundNumber * taskState.round_time;
 
-    // now, loop over the taskIDs and calculate the dev_bonus and node_bonus
-    // for each task
-    let totalWeight = 0;
-    for (let task of taskList) {
-      let taskState = await namespaceWrapper.getTaskStateById(
-        task.id, 
-        task.type,
-        { 
-          is_available_balances_required: true,
-          is_stake_list_required: true
+    const currentSlot = await namespaceWrapper.getSlot();
+    console.log("Round Begin Slot:", roundBeginSlot);
+    console.log("Current Slot:", currentSlot);
+    // Check if the current slot is within in 1 minute of the round begin slot
+    if (roundBeginSlot + 200 >= currentSlot) {
+      // the all task states are fetched in parallel
+      const getAllTaskStates = await getTaskState(getTaskList);
+
+      const users = {};
+
+      for (const taskStates of getAllTaskStates) {
+        const { taskId } = taskStates;
+        const { submissions, stake_list, task_manager } = taskStates.data;
+
+        // submission weights and only get the last five submissions
+        const lastFiveKeys = Object.keys(submissions)
+          .map(Number)
+          .sort((a, b) => a - b)
+          .slice(-5);
+
+        // get the sum of all the submission weights
+        for (const lastFiveKey of lastFiveKeys) {
+          const submission = submissions[`${lastFiveKey}`];
+
+          // kpl staking key
+          for (const itemKey of Object.keys(submission)) {
+            if (stake_list.hasOwnProperty(itemKey)) {
+              if (!users[itemKey]) {
+                users[itemKey] = {
+                  submissions: {},
+                  stakes: {},
+                  developerOf: {},
+                };
+              }
+
+              users[itemKey].submissions[taskId] =
+                (users[itemKey].submissions[taskId] || 0) + 1;
+              users[itemKey].stakes[taskId] = stake_list[itemKey] / 1e9;
+            }
+          }
         }
+
+        const developerKey = await bs58.encode(task_manager);
+        if (getDeveloperKey[developerKey]) {
+          const getTaskId = Object.keys(getDeveloperKey[developerKey])[0];
+          if (getTaskId === taskId) {
+            const kplStakingKey = getDeveloperKey[developerKey][getTaskId].getKPLStakingKey;
+            if (!users[kplStakingKey]) {
+              users[kplStakingKey] = {
+                submissions: {},
+                stakes: {},
+                developerOf: {},
+              };
+              // Initialize submissions and stakes for this task
+              if (stake_list[kplStakingKey]) {
+                users[kplStakingKey].stakes[taskId] = stake_list[kplStakingKey] / 1e9;
+              }
+            }
+            users[kplStakingKey].developerOf[taskId] = true;
+            console.log(`Developer bonus set for ${kplStakingKey} on task ${taskId}`);
+          }
+        }
+
+        // developer key and task id
+        // const developer_key = await bs58.encode(task_manager);
+        // console.log(developer_key);
+      }
+
+      for (let stakingKey in users) {
+        let user = users[stakingKey];
+        if (user.submissions) {
+          for (let submissionKey in user.submissions) {
+            const getTaskSpecificWeight = getWeightList[submissionKey];
+            if (typeof getTaskSpecificWeight === 'number' && !isNaN(getTaskSpecificWeight)) {
+              const originalValue = user.submissions[submissionKey];
+              user.submissions[submissionKey] *= getTaskSpecificWeight;
+            } else {
+              console.warn(`Missing or invalid weight for task ${submissionKey}`);
+              user.submissions[submissionKey] *= 1;
+            }
+          }
+        }
+      }
+
+      // console.log('Users object before reward calculation:', JSON.stringify(users, null, 2));
+
+      const distribution_proposal = await calculateRewards(
+        users,
+        REWARD_PER_ROUND,
       );
 
-      if (!taskState) throw new Error("Task not found");
+      const total_node_bonus = Object.values(distribution_proposal).reduce(
+        (a, b) => a + b,
+        0,
+      );
+      console.log("total_node_bonus:", total_node_bonus / 1e9);
 
-      // we calculate the dev_bonus and node_bonus for each task by the amount of unclaimed rewards
-      let unclaimed_rewards = await getUnclaimedRewards(taskState);
-      let developer_key = await bs58.encode(taskState.task_manager); // convert from buffer to base58
+      // get both kpl and koii staking key
+      const getKoiiStakingKey =
+        await namespaceWrapper.getSubmitterAccount("KOII");
+      const getKPLStakingKey =
+        await namespaceWrapper.getSubmitterAccount("KPL");
 
-      // before adding the bonuses to the distribution proposal, we must weight them by the global weighting factors
-      // the developer receives half of the bonus rewards, and the node receives the other half
-      // there is only one developer key per task, so we can just multiply the dev_bonus by the weighting factor
-      let task_weight = weighting_factors[task.id] * REWARD_PER_ROUND;
-      console.log('task', task.id);
-      console.log('task_weight', task_weight);
-      totalWeight += task_weight;
+      const koiiPublicKey = getKoiiStakingKey.publicKey.toBase58();
+      const kplPublicKey = getKPLStakingKey.publicKey.toBase58();
 
-      // now we can calculate the node_bonus for each node
-      let unclaimedRewardsKeys = Object.keys(unclaimed_rewards.all);
-      let total_node_bonus = 0;
-      for (let key of unclaimedRewardsKeys) {
-        let node_bonus = unclaimed_rewards.all[key] * task_weight * 0.5; // todo : incorporate the stake amount into the bonus
-        if (Object.keys(distribution_proposal).includes(key)) {
-          distribution_proposal[key] += node_bonus;
-        } else {
-          distribution_proposal[ key ] = node_bonus;
-        }
-        total_node_bonus += node_bonus;
-      }
+      const getStakingKeys = {
+        getKoiiStakingKey: koiiPublicKey,
+        getKPLStakingKey: kplPublicKey,
+      };
 
-      console.log('total_node_bonus', total_node_bonus)
+      await namespaceWrapper.storeSet("dist_" + roundNumber, {
+        getStakingKeys,
+        distribution_proposal,
+      });
 
-      // now we must add the developer rewards to the distribution proposal
-      if (Object.keys(distribution_proposal).includes(developer_key)) {
-        distribution_proposal[developer_key] += task_weight * 0.5;
-      } else {
-        distribution_proposal[developer_key] = task_weight * 0.5;
-      }
-      total_node_bonus += distribution_proposal[developer_key];
-
-      console.log('total bonus after developer', total_node_bonus)
-      // TODO: if the developer is also staking, we must add the stake amount to the dev_bonus
-
-      let checksumtotal = await checkSumTally(distribution_proposal);
-      console.log('checksumtotal', checksumtotal)
+      let checkSumTotal = await checkSumTally(distribution_proposal);
+      console.log("checkSumTotal", checkSumTotal);
+    } else {
+      console.log(
+        "Task missed the window to be executed, skip round",
+        roundNumber,
+      );
     }
-
-    console.log('totalweight', totalWeight)
-
-    // as some developers and nodes may be common between the many tasks, we must harmonize the final distribution list
-    let checksumtotal = await checkSumTally(distribution_proposal);
-    console.log('checksumtotal', checksumtotal)
-    let outstanding = REWARD_PER_ROUND - checksumtotal;
-    console.log('outstanding', outstanding)
-    // console.log('distribution_proposal', distribution_proposal)
-
-    await namespaceWrapper.storeSet("dist_"+roundNumber, distribution_proposal);
   } catch (error) {
     console.error("EXECUTE TASK ERROR:", error);
+  }
+}
+
+async function getTaskState(taskList) {
+  try {
+    const fetchPromises = taskList.map(async (task) => {
+      try {
+        console.log("task", task);
+        const result = await namespaceWrapper.getTaskStateById(
+          task.id,
+          task.type,
+          {
+            is_available_balances_required: true,
+            is_stake_list_required: true,
+            is_submission_required: true,
+          },
+        );
+        // console.log("result", result);
+        if (!result || result.data === null) {
+          console.error(`Task ID ${task.id} returned null data.`);
+          return null;
+        }
+
+        return {
+          taskId: task.id,
+          success: true,
+          data: result,
+        };
+      } catch (error) {
+        console.error(
+          `Error fetching data for task ID ${task.id}:`,
+          error.message,
+        );
+        return null;
+      }
+    });
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(
+        () => reject(new Error("Timeout: Fetching tasks took too long")),
+        120000,
+      ),
+    );
+
+    const taskResults = await Promise.race([
+      Promise.all(fetchPromises),
+      timeoutPromise,
+    ]);
+
+    const successfulTasks = taskResults.filter((result) => result !== null);
+
+    return successfulTasks;
+  } catch (error) {
+    console.error("Error in fetchAllTaskData:", error);
+    return [];
   }
 }
