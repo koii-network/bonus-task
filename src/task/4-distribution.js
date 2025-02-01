@@ -42,14 +42,40 @@ export async function distribution(submitters, bounty, roundNumber) {
       return distributionList;
     }
 
-    const { distribution_proposal } = await namespaceWrapper.storeGet(
+    const distData = await namespaceWrapper.storeGet(
       "dist_" + roundNumber,
     );
+    
+    console.log("Distribution data from storeGet:", distData);
+    
+    if (!distData) {
+      console.log("No distribution data found for round:", roundNumber);
+      return distributionList;
+    }
+
+    const { distribution_proposal } = distData;
+    
+    if (!distribution_proposal) {
+      console.log("No distribution_proposal found in data for round:", roundNumber);
+      return distributionList;
+    }
+
     console.log("The number of distribution_proposal to check in distribution round:", Object.keys(distribution_proposal).length);
 
-    const taskState = await namespaceWrapper.getTaskState({
-      is_submission_required: true,
-    });
+    let taskState;
+    try {
+      taskState = await namespaceWrapper.getTaskState({
+        is_submission_required: true,
+      });
+    } catch (error) {
+      console.error("Error getting task state:", error.message);
+      return distributionList;
+    }
+
+    if (!taskState || !taskState.submissions) {
+      console.log("Invalid task state or missing submissions");
+      return distributionList;
+    }
 
     const { submissions } = taskState;
     const currentSubmission = submissions[roundNumber];
@@ -58,7 +84,7 @@ export async function distribution(submitters, bounty, roundNumber) {
     
     if (!currentSubmission) {
       console.log("Key not found in submissions for round:", roundNumber);
-      return {};
+      return distributionList;
     }
 
     for (const key of Object.keys(currentSubmission)) {
@@ -66,7 +92,7 @@ export async function distribution(submitters, bounty, roundNumber) {
       if (!approvedSubmitters.includes(key)) {
         console.log(`Skipping submission from ${key} as they are not in approved submitters list`);
         continue;
-      }S
+      }
       
       const cid = currentSubmission[key].submission_value;
       console.log(`Processing submission for ${key} with CID: ${cid}`);
