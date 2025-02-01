@@ -27,7 +27,7 @@ export async function task(roundNumber) {
     console.log("Round Begin Slot:", roundBeginSlot);
     console.log("Current Slot:", currentSlot);
     // Check if the current slot is within in 1 minute of the round begin slot
-    if (roundBeginSlot + 200 >= currentSlot) {
+    if (roundBeginSlot + 400 >= currentSlot) {
       // the all task states are fetched in parallel
       const getAllTaskStates = await getTaskState(getTaskList);
 

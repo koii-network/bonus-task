@@ -8,9 +8,24 @@ export async function distribution(roundNumber) {
 
   try {
     const approvedSubmitters = ["AwQj7Y9wCNFxt3PFTuxWcHQfztqb9PsQtbqN8GQwFD9y", "q8p7ZwNL1dVngMHstsm7VP62uAe9W7vN3v3mjG1Xnds"];
-    const { distribution_proposal } = await namespaceWrapper.storeGet(
+
+    const distData = await namespaceWrapper.storeGet(
       "dist_" + roundNumber,
     );
+    
+    console.log("Distribution data from storeGet:", distData);
+    
+    if (!distData) {
+      console.log("No distribution data found for round:", roundNumber);
+      return distributionList;
+    }
+
+    const { distribution_proposal } = distData;
+    
+    if (!distribution_proposal) {
+      console.log("No distribution_proposal found in data for round:", roundNumber);
+      return distributionList;
+    }
     // console.log("distribution_proposal to check in distribution round", distribution_proposal);
 
     const taskState = {
@@ -30,7 +45,7 @@ export async function distribution(roundNumber) {
       task_description: 'Dummy Task state for testing flow',
       submissions: 
         {
-          "0": {
+          "2": {
             "AwQj7Y9wCNFxt3PFTuxWcHQfztqb9PsQtbqN8GQwFD9y": {
               "submission_value": "bafybeifcrqbofdm2rpqogmbtkjpqlwepma6mfj77wrmwh5bqlxi6moclde",
               "slot": 5914414
@@ -135,4 +150,4 @@ export async function distribution(roundNumber) {
   }
 }
 
-distribution(0);
+distribution(2);
