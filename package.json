@@ -29,14 +29,11 @@
     "axios": "^1.7.7",
     "babel-jest": "^29.7.0",
     "bs58": "^6.0.0",
-    "chai": "^5.1.2",
     "chalk": "^5.3.0",
     "cross-spawn": "^7.0.3",
     "dotenv": "^16.3.0",
     "dotenv-webpack": "^8.1.0",
-    "mocha": "^11.1.0",
     "nodemon": "^3.1.7",
-    "sinon": "^19.0.2",
     "tail": "^2.2.6"
   },
   "devDependencies": {
