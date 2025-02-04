@@ -20,15 +20,20 @@ let taskList = [
     type: "KPL",
   },
   {
+    id:"5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc", // Astrolink
+    type: "KPL",
+  },
+  {
     id: "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL", // [BETA]ArK:Dangerous Dave
     type: "KOII",
   },
 ];
 let weighting_factors = {
-  HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A: 0.2, // Mask Task
+  HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A: 0.1, // Mask Task
   "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M": 0.2, // Free Token Task
   AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy: 0.2, // BIGBIG
-  "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH": 0.2, // Truflation
+  "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc": 0.2, // Astrolink
+  "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH": 0.1, // Truflation
   "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL": 0.2, // [BETA]ArK:Dangerous Dave
 };
 
