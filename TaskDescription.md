@@ -13,8 +13,9 @@ In order to support these new launches, and make sure developers get access to l
 ## Which Tasks are Eligible?
 
 Run these tasks to earn your bonus:
-- Mask Social Feeds
 - Free Fire Task
+- Mask Social Feeds
+- Astrolink Task
 - Big Big Task
 - Inflation Monitoring
 - ArK: Dangerous Dave Task
