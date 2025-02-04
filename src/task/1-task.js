@@ -3,7 +3,11 @@ import { PublicKey } from "@_koii/web3.js";
 import { calculateRewards, checkSumTally } from "../modules/helpers.js";
 import bs58 from "bs58";
 import { REWARD_PER_ROUND } from "../config/constants.js";
-import { taskList, weighting_factors, developerKey } from "../modules/globalList.js";
+import {
+  taskList,
+  weighting_factors,
+  developerKey,
+} from "../modules/globalList.js";
 
 export async function task(roundNumber) {
   /**
@@ -69,7 +73,8 @@ export async function task(roundNumber) {
         if (getDeveloperKey[developerKey]) {
           const getTaskId = Object.keys(getDeveloperKey[developerKey])[0];
           if (getTaskId === taskId) {
-            const kplStakingKey = getDeveloperKey[developerKey][getTaskId].getKPLStakingKey;
+            const kplStakingKey =
+              getDeveloperKey[developerKey][getTaskId].getKPLStakingKey;
             if (!users[kplStakingKey]) {
               users[kplStakingKey] = {
                 submissions: {},
@@ -78,11 +83,14 @@ export async function task(roundNumber) {
               };
               // Initialize submissions and stakes for this task
               if (stake_list[kplStakingKey]) {
-                users[kplStakingKey].stakes[taskId] = stake_list[kplStakingKey] / 1e9;
+                users[kplStakingKey].stakes[taskId] =
+                  stake_list[kplStakingKey] / 1e9;
               }
             }
             users[kplStakingKey].developerOf[taskId] = true;
-            console.log(`Developer bonus set for ${kplStakingKey} on task ${taskId}`);
+            console.log(
+              `Developer bonus set for ${kplStakingKey} on task ${taskId}`,
+            );
           }
         }
 
@@ -96,11 +104,16 @@ export async function task(roundNumber) {
         if (user.submissions) {
           for (let submissionKey in user.submissions) {
             const getTaskSpecificWeight = getWeightList[submissionKey];
-            if (typeof getTaskSpecificWeight === 'number' && !isNaN(getTaskSpecificWeight)) {
+            if (
+              typeof getTaskSpecificWeight === "number" &&
+              !isNaN(getTaskSpecificWeight)
+            ) {
               const originalValue = user.submissions[submissionKey];
               user.submissions[submissionKey] *= getTaskSpecificWeight;
             } else {
-              console.warn(`Missing or invalid weight for task ${submissionKey}`);
+              console.warn(
+                `Missing or invalid weight for task ${submissionKey}`,
+              );
               user.submissions[submissionKey] *= 1;
             }
           }
