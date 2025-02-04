@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koii Task Voting</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Koii Task Voting</h1>
+            <div class="user-info">
+                <p>Your Stake: <span id="userStake">Loading...</span> KOII</p>
+            </div>
+        </header>
+
+        <main>
+            <div class="voting-instructions">
+                <h2>Select Your Top Tasks</h2>
+                <p>Choose up to 3 tasks in order of preference:</p>
+                <ul>
+                    <li>1st choice: 50% weight (if only top 3 selected)</li>
+                    <li>2nd choice: 30% weight (if only top 3 selected)</li>
+                    <li>3rd choice: 20% weight (if only top 3 selected)</li>
+                </ul>
+                <p class="note">Note: Weights will adjust automatically based on number of selections</p>
+            </div>
+
+            <div class="task-list" id="taskList">
+                <!-- Tasks will be populated here -->
+            </div>
+
+            <div class="selected-tasks">
+                <h3>Your Selections</h3>
+                <div id="selectedTasks">
+                    <div class="selection-slot">
+                        <span class="rank">1st Choice</span>
+                        <span class="task-name" id="firstChoice">Not selected</span>
+                        <span class="weight" id="firstWeight">-</span>
+                    </div>
+                    <div class="selection-slot">
+                        <span class="rank">2nd Choice</span>
+                        <span class="task-name" id="secondChoice">Not selected</span>
+                        <span class="weight" id="secondWeight">-</span>
+                    </div>
+                    <div class="selection-slot">
+                        <span class="rank">3rd Choice</span>
+                        <span class="task-name" id="thirdChoice">Not selected</span>
+                        <span class="weight" id="thirdWeight">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <button id="submitVote" class="submit-btn">Submit Vote</button>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html> 
