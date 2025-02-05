@@ -1,23 +1,176 @@
 import { namespaceWrapper } from "@_koii/namespace-wrapper";
-import { fileURLToPath } from 'url';
-import path from 'path';
+import { votePageTemplate } from './vote-page-template.js';
+import fs from 'fs';
 import open from 'open';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import os from 'os';
+import path from 'path';
+import http from 'http';
 
 export async function setup() {
   try {
     console.log("CUSTOM SETUP");
     
-    // Open the voting page in default browser
-    const votingPagePath = path.join(__dirname, '../../vote_page/index.html');
-    await open(votingPagePath);
+    // Create a simple server to receive vote data
+    const server = http.createServer((req, res) => {
+      // Enable CORS for all routes
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      // Handle preflight requests
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+      }
+
+      if (req.method === 'POST' && req.url === '/vote') {
+        let body = '';
+        req.on('data', chunk => {
+          body += chunk.toString();
+        });
+        req.on('end', async () => {
+          try {
+            const voteData = JSON.parse(body);
+            console.log("Received vote data:", voteData);
+            
+            // Validate vote data
+            if (!voteData.votes || !Array.isArray(voteData.votes)) {
+              throw new Error('Invalid vote data format');
+            }
+
+            // Verify that votes array matches selectedTasks
+            if (voteData.selectedTasks.length !== voteData.votes.length) {
+              throw new Error('Mismatch between selected tasks and votes');
+            }
+
+            // Verify weights sum to approximately 1
+            const weightSum = voteData.votes.reduce((sum, vote) => sum + vote.weight, 0);
+            if (Math.abs(weightSum - 1) > 0.001) {
+              throw new Error('Vote weights do not sum to 1');
+            }
+
+            const roundNumber = await namespaceWrapper.getRound();
+            
+            // Store vote data with round number
+            await namespaceWrapper.storeSet(
+              `votes_${roundNumber}`,
+              JSON.stringify({
+                selectedTasks: voteData.selectedTasks,
+                votes: voteData.votes.map((vote, index) => ({
+                  taskId: voteData.selectedTasks[index],
+                  weight: vote.weight
+                })),
+                timestamp: voteData.timestamp
+              })
+            );
+            
+            console.log(`Votes stored for round ${roundNumber}:`, {
+              selectedTasks: voteData.selectedTasks,
+              votes: voteData.votes
+            });
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true }));
+          } catch (error) {
+            console.error('Error storing votes:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: error.message }));
+          }
+        });
+      } else {
+        res.writeHead(404);
+        res.end();
+      }
+    });
+
+    // Start server on a random port
+    const port = 3000 + Math.floor(Math.random() * 1000);
+    
+    // Wait for server to start
+    await new Promise((resolve, reject) => {
+      server.on('error', reject);
+      server.listen(port, () => {
+        console.log(`Vote server listening on port ${port}`);
+        resolve();
+      });
+    });
+
+    // Test server connection
+    try {
+      await fetch(`http://localhost:${port}/vote`, { method: 'OPTIONS' });
+      console.log('Server connection test successful');
+    } catch (error) {
+      console.error('Server connection test failed:', error);
+      throw new Error('Failed to establish server connection');
+    }
+    
+    // Create the HTML file with the server port
+    const tempDir = os.tmpdir();
+    const tempFile = path.join(tempDir, 'koii-voting.html');
+    
+    // Create the modified template with proper fetch call
+    const fetchCode = `
+      try {
+        const response = await fetch('http://localhost:${port}/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(voteData),
+          mode: 'cors'
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Server returned ' + response.status);
+        }
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Failed to store votes');
+        console.log('Vote data sent successfully');
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to store votes on the node: ' + error.message);
+        return;
+      }
+    `;
+
+    // Replace the postMessage call with our fetch code
+    const modifiedTemplate = votePageTemplate.replace(
+      'window.parent.postMessage(',
+      `${fetchCode}\nwindow.parent.postMessage(`
+    );
+    
+    // Write the file and log its location
+    fs.writeFileSync(tempFile, modifiedTemplate);
+    console.log("Created voting page at:", tempFile);
+    
+    // Verify the file exists and has content
+    if (fs.existsSync(tempFile)) {
+      const stats = fs.statSync(tempFile);
+      console.log("File size:", stats.size, "bytes");
+    } else {
+      throw new Error("Failed to create voting page file");
+    }
+    
+    // Open the voting page
+    console.log("Opening voting page in browser...");
+    await open(tempFile);
     console.log("Voting page opened in your default browser");
 
-    return true;
+    // Keep the process running until votes are received or timeout
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        console.log("Vote timeout reached, closing server");
+        server.close();
+        resolve(true);
+      }, 300000); // 5 minutes timeout
+
+      server.on('close', () => {
+        console.log("Vote server closed");
+        clearTimeout(timeout);
+        resolve(true);
+      });
+    });
   } catch (err) {
-    console.log("ERR", err);
+    console.error("Setup error:", err);
     return false;
   }
 }
