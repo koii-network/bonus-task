@@ -61,18 +61,43 @@ export async function setup() {
             await namespaceWrapper.storeSet(
               "votes",
               JSON.stringify({
-                selectedTasks: voteData.selectedTasks,
-                votes: voteData.votes.map((vote, index) => ({
-                  taskId: voteData.selectedTasks[index],
-                  weight: vote.weight
-                })),
-                timestamp: voteData.timestamp
+                votes: voteData.votes.reduce((acc, vote, index) => {
+                  const taskId = voteData.selectedTasks[index];
+                  // Define task types mapping
+                  const taskTypes = {
+                    "HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A": "KPL",
+                    "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M": "KPL",
+                    "AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy": "KPL",
+                    "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH": "KPL",
+                    "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc": "KPL",
+                    "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL": "KOII"
+                  };
+                  acc[taskId] = {
+                    weighting_factors: vote.weight,
+                    type: taskTypes[taskId]
+                  };
+                  return acc;
+                }, {})
               })
             );
             
             console.log("Votes stored successfully:", {
-              selectedTasks: voteData.selectedTasks,
-              votes: voteData.votes
+              votes: voteData.votes.reduce((acc, vote, index) => {
+                const taskId = voteData.selectedTasks[index];
+                const taskTypes = {
+                  "HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A": "KPL",
+                  "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M": "KPL",
+                  "AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy": "KPL",
+                  "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH": "KPL",
+                  "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc": "KPL",
+                  "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL": "KOII"
+                };
+                acc[taskId] = {
+                  weighting_factors: vote.weight,
+                  type: taskTypes[taskId]
+                };
+                return acc;
+              }, {})
             });
 
             res.writeHead(200, { 'Content-Type': 'application/json' });

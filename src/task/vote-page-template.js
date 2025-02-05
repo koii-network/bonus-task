@@ -164,27 +164,33 @@ export const votePageTemplate = `
                 this.taskList = [
                     {
                         id: "HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A",
-                        name: "Mask Task"
+                        name: "Mask Task",
+                        type: "KPL"
                     },
                     {
                         id: "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M",
-                        name: "Free Fire Task"
+                        name: "Free Fire Task",
+                        type: "KPL"
                     },
                     {
                         id: "AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy",
-                        name: "BigBig"
+                        name: "BigBig",
+                        type: "KPL",
                     },
                     {
                         id: "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH",
-                        name: "Truflation"
+                        name: "Truflation",
+                        type: "KPL",
                     },
                     {
                         id: "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc",
-                        name: "Astrolink"
+                        name: "Astrolink",
+                        type: "KPL"
                     },
                     {
                         id: "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL",
-                        name: "[BETA]ArK:Dangerous Dave"
+                        name: "[BETA]ArK:Dangerous Dave",
+                        type: "KOII"
                     }
                 ];
                 console.log('Task list loaded:', this.taskList.length, 'tasks');

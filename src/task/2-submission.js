@@ -10,50 +10,55 @@ export async function submission(roundNumber) {
   try {
     console.log(`MAKE SUBMISSION FOR ROUND ${roundNumber}`);
 
-    const get_distribution_proposal = await namespaceWrapper.storeGet(
-      "dist_" + roundNumber,
-    );
-
-    const { distribution_proposal, getStakingKeys } = get_distribution_proposal;
-
-    console.log(
-      "distribution_proposal, getStakingKeys",
-      Object.keys(distribution_proposal).length,
-      getStakingKeys,
-    );
-
-    if (
-      !distribution_proposal ||
-      Object.keys(distribution_proposal).length === 0 ||
-      !getStakingKeys
-    ) {
+    // Get the stored distribution data for this round
+    const distData = await namespaceWrapper.storeGet("vote_" + roundNumber);
+    if (!distData) {
+      console.log("No vote data found for round:", roundNumber);
       return "";
     }
 
-    const getFilePath = await storeInFile({
-      distribution_proposal: get_distribution_proposal,
-    });
-    console.log("getFilePath", getFilePath);
-
-    if (getFilePath === "") {
+    const { getStakingKeys, vote } = distData;
+    if (!getStakingKeys || !vote) {
+      console.log("Missing required data in distribution data");
       return "";
     }
 
-    const getCID = await getSubmissionCID(getFilePath);
+    // Create the submission data structure
+    const submissionData = {
+      user_vote: {
+        getStakingKeys,
+        vote: JSON.parse(vote).votes
+      }
+    };
 
-    console.log("submission completed");
-    return getCID;
+    // Store the submission data in a file
+    const filePath = await storeInFile(submissionData);
+    console.log("Submission data stored in file:", submissionData);
+
+    if (filePath === "") {
+      console.log("Failed to store submission data in file");
+      return "";
+    }
+
+    // Upload the file and get CID
+    const cid = await getSubmissionCID(filePath);
+    if (!cid) {
+      console.log("Failed to get CID for submission");
+      return "";
+    }
+
+    console.log("Submission completed with CID:", cid);
+    return cid;
   } catch (error) {
     console.error("MAKE SUBMISSION ERROR:", error);
+    return "";
   }
 }
 
 async function getSubmissionCID(filePath) {
   try {
     const client = new KoiiStorageClient(undefined, undefined, true);
-
     const userStaking = await namespaceWrapper.getSubmitterAccount();
-
     const { cid } = await client.uploadFile(filePath, userStaking);
     return cid;
   } catch (error) {
