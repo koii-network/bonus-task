@@ -40,11 +40,26 @@ export async function audit(submission, roundNumber, submitterKey) {
       return false;
     }
 
+    // get the current task submission
+    let currentTaskState;
     try {
-      // Check current slot and Get the task state
-      const taskState = await namespaceWrapper.getTaskState({});
+      currentTaskState = await namespaceWrapper.getTaskState({
+        is_submission_required: true,
+      });
+    } catch (error) {
+      console.error("Error getting task state:", error.message);
+      return false;
+    }
+
+    if (!currentTaskState || !currentTaskState.submissions) {
+      console.log("Invalid task state or missing submissions");
+      return false;
+    }
+
+    try {
       const roundBeginSlot =
-        taskState.starting_slot + roundNumber * taskState.round_time;
+        currentTaskState.starting_slot +
+        roundNumber * currentTaskState.round_time;
       const currentSlot = await namespaceWrapper.getSlot();
 
       console.log("Round Begin Slot:", roundBeginSlot);
@@ -166,13 +181,28 @@ export async function audit(submission, roundNumber, submitterKey) {
         );
         console.log("total_node_bonus:", total_node_bonus / 1e9);
 
-        await namespaceWrapper.storeSet("audits_" + roundNumber, {
-          getStakingKeys,
-          distribution_proposal,
-        });
-
         let checkSumTotal = await checkSumTally(distribution_proposal);
         console.log("checkSumTotal", checkSumTotal);
+
+        // get the final list of Distribution
+        const finalDistributionList = await processSubmissions(
+          currentTaskState,
+          roundNumber,
+          distribution_proposal,
+        );
+
+        if (Object.keys(finalDistributionList).length === 0) {
+          console.log(
+            "Empty distribution list in the audits: ",
+            Object.keys(finalDistributionList).length,
+          );
+          return false;
+        }
+
+        await namespaceWrapper.storeSet(
+          "finalDistributionList_" + roundNumber,
+          finalDistributionList,
+        );
 
         return true;
       } else {
@@ -245,4 +275,65 @@ async function getTaskState(taskList) {
     console.error("Error in fetchAllTaskData:", error);
     return [];
   }
+}
+
+// process the current submission and mapping the KOII staking key
+async function processSubmissions(
+  currentTaskState,
+  roundNumber,
+  distribution_proposal,
+) {
+  const finalDistributionList = {};
+  const { submissions } = currentTaskState;
+  const currentSubmission = submissions[roundNumber];
+
+  console.log("Get currentSubmission", currentSubmission);
+
+  if (!currentSubmission) {
+    console.log("Key not found in submissions for round:", roundNumber);
+    return finalDistributionList;
+  }
+
+  for (const key of Object.keys(currentSubmission)) {
+    const cid = currentSubmission[key].submission_value;
+    console.log(`Processing submission for ${key} with CID: ${cid}`);
+
+    try {
+      const cidData = await getDataFromCID("distribution_proposal.json", cid);
+
+      if (
+        !cidData ||
+        !cidData.user_vote ||
+        !cidData.user_vote.vote ||
+        !cidData.user_vote.getStakingKeys
+      ) {
+        console.log("Invalid or missing data in CID response");
+        continue;
+      }
+
+      const { getKoiiStakingKey, getKPLStakingKey } =
+        cidData.user_vote.getStakingKeys;
+
+      console.log("Checking KOII wallet in SUBMISSION:", getKoiiStakingKey);
+      console.log("Checking KPL wallet in SUBMISSION:", getKPLStakingKey);
+      console.log(
+        "The number of distribution proposal available:",
+        Object.keys(distribution_proposal).length,
+      );
+
+      const kplBounty = distribution_proposal[getKPLStakingKey] || 0;
+      const koiiBounty = distribution_proposal[getKoiiStakingKey] || 0;
+      const currentBounty = Math.max(kplBounty, koiiBounty);
+
+      finalDistributionList[getKoiiStakingKey] = currentBounty;
+      console.log(
+        `Assigned highest bounty ${currentBounty} to KOII wallet ${getKoiiStakingKey} (KPL: ${kplBounty}, KOII: ${koiiBounty})`,
+      );
+    } catch (error) {
+      console.error("Error processing submission:", error.message);
+      continue;
+    }
+  }
+
+  return finalDistributionList;
 }
