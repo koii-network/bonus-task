@@ -1,8 +1,32 @@
 class VotingSystem {
     constructor() {
         this.selectedTasks = [];
-        this.userStake = 0;
-        this.tasks = [];
+        this.taskList = [
+            {
+                id: "HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A",
+                name: "Mask Task"
+            },
+            {
+                id: "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M",
+                name: "Free Fire Task"
+            },
+            {
+                id: "AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy",
+                name: "BigBig"
+            },
+            {
+                id: "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH",
+                name: "Truflation"
+            },
+            {
+                id: "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc",
+                name: "Astrolink"
+            },
+            {
+                id: "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL",
+                name: "[BETA]ArK:Dangerous Dave"
+            }
+        ];
         this.weights = {
             1: [1],
             2: [0.7, 0.3],
@@ -12,47 +36,17 @@ class VotingSystem {
         this.init();
     }
 
-    async init() {
-        await this.fetchUserStake();
-        await this.fetchTasks();
+    init() {
+        this.renderTasks();
         this.setupEventListeners();
         this.updateUI();
     }
 
-    async fetchUserStake() {
-        try {
-            // Replace with actual API call to fetch user's stake
-            const response = await fetch('/api/user/stake');
-            const data = await response.json();
-            this.userStake = data.stake;
-            document.getElementById('userStake').textContent = this.userStake;
-        } catch (error) {
-            console.error('Error fetching user stake:', error);
-            document.getElementById('userStake').textContent = 'Error loading stake';
-        }
-    }
-
-    async fetchTasks() {
-        try {
-            // Replace with actual API call to fetch tasks
-            const response = await fetch('/api/tasks');
-            this.tasks = await response.json();
-            this.renderTasks();
-        } catch (error) {
-            console.error('Error fetching tasks:', error);
-            document.getElementById('taskList').innerHTML = '<p class="error">Error loading tasks</p>';
-        }
-    }
-
     renderTasks() {
         const taskList = document.getElementById('taskList');
-        taskList.innerHTML = this.tasks.map(task => `
+        taskList.innerHTML = this.taskList.map(task => `
             <div class="task-card" data-task-id="${task.id}">
                 <h3>${task.name}</h3>
-                <p>${task.description}</p>
-                <div class="task-stats">
-                    <span>Current Votes: ${task.votes || 0}</span>
-                </div>
             </div>
         `).join('');
     }
@@ -95,7 +89,7 @@ class VotingSystem {
         // Reset all elements
         choiceElements.forEach((id, index) => {
             const taskId = this.selectedTasks[index];
-            const task = taskId ? this.tasks.find(t => t.id === taskId) : null;
+            const task = taskId ? this.taskList.find(t => t.id === taskId) : null;
             
             document.getElementById(id).textContent = task ? task.name : 'Not selected';
         });
@@ -110,6 +104,15 @@ class VotingSystem {
         // Enable/disable submit button
         const submitBtn = document.getElementById('submitVote');
         submitBtn.disabled = this.selectedTasks.length === 0;
+
+        // Log the current selection state
+        console.log('Current Selections:', this.selectedTasks.map(taskId => {
+            const task = this.taskList.find(t => t.id === taskId);
+            return {
+                id: taskId,
+                name: task.name
+            };
+        }));
     }
 
     async submitVote() {
@@ -121,32 +124,14 @@ class VotingSystem {
             weight: currentWeights[index]
         }));
 
-        try {
-            const response = await fetch('/api/vote', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    votes,
-                    stake: this.userStake
-                })
-            });
+        console.log('Submitting votes:', votes);
+        alert('Votes recorded:\n' + JSON.stringify(votes, null, 2));
 
-            if (response.ok) {
-                alert('Vote submitted successfully!');
-                // Reset selections
-                this.selectedTasks = [];
-                document.querySelectorAll('.task-card.selected')
-                    .forEach(card => card.classList.remove('selected'));
-                this.updateUI();
-            } else {
-                throw new Error('Failed to submit vote');
-            }
-        } catch (error) {
-            console.error('Error submitting vote:', error);
-            alert('Failed to submit vote. Please try again.');
-        }
+        // Reset selections after submission
+        this.selectedTasks = [];
+        document.querySelectorAll('.task-card.selected')
+            .forEach(card => card.classList.remove('selected'));
+        this.updateUI();
     }
 }
 
