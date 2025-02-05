@@ -37,18 +37,30 @@ class VotingSystem {
     }
 
     init() {
+        this.loadSavedVotes();
         this.renderTasks();
         this.setupEventListeners();
         this.updateUI();
     }
 
+    loadSavedVotes() {
+        const savedVotes = localStorage.getItem('taskVotes');
+        if (savedVotes) {
+            const { selectedTasks } = JSON.parse(savedVotes);
+            this.selectedTasks = selectedTasks;
+        }
+    }
+
     renderTasks() {
         const taskList = document.getElementById('taskList');
-        taskList.innerHTML = this.taskList.map(task => `
-            <div class="task-card" data-task-id="${task.id}">
-                <h3>${task.name}</h3>
-            </div>
-        `).join('');
+        taskList.innerHTML = this.taskList.map(task => {
+            const isSelected = this.selectedTasks.includes(task.id);
+            return `
+                <div class="task-card ${isSelected ? 'selected' : ''}" data-task-id="${task.id}">
+                    <h3>${task.name}</h3>
+                </div>
+            `;
+        }).join('');
     }
 
     setupEventListeners() {
@@ -60,7 +72,7 @@ class VotingSystem {
         });
 
         document.getElementById('submitVote').addEventListener('click', () => {
-            this.submitVote();
+            this.saveVotes();
         });
     }
 
@@ -104,18 +116,9 @@ class VotingSystem {
         // Enable/disable submit button
         const submitBtn = document.getElementById('submitVote');
         submitBtn.disabled = this.selectedTasks.length === 0;
-
-        // Log the current selection state
-        console.log('Current Selections:', this.selectedTasks.map(taskId => {
-            const task = this.taskList.find(t => t.id === taskId);
-            return {
-                id: taskId,
-                name: task.name
-            };
-        }));
     }
 
-    async submitVote() {
+    saveVotes() {
         if (this.selectedTasks.length === 0) return;
 
         const currentWeights = this.weights[this.selectedTasks.length];
@@ -124,14 +127,16 @@ class VotingSystem {
             weight: currentWeights[index]
         }));
 
-        console.log('Submitting votes:', votes);
-        alert('Votes recorded:\n' + JSON.stringify(votes, null, 2));
+        // Save to localStorage
+        const voteData = {
+            selectedTasks: this.selectedTasks,
+            votes: votes,
+            timestamp: new Date().toISOString()
+        };
 
-        // Reset selections after submission
-        this.selectedTasks = [];
-        document.querySelectorAll('.task-card.selected')
-            .forEach(card => card.classList.remove('selected'));
-        this.updateUI();
+        localStorage.setItem('taskVotes', JSON.stringify(voteData));
+        console.log('Votes saved locally:', voteData);
+        alert('Votes saved successfully!\n\n' + JSON.stringify(votes, null, 2));
     }
 }
 
