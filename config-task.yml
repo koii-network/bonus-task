@@ -107,7 +107,7 @@ tags: []
 # Environment ##
 # TEST or PRODUCTION
 # Production mode will expose your task to all the task runners, even if not whitelisted.
-environment: "TEST"
+environment: "PRODUCTION"
 
 #################################### FOR UPDATING TASKS ONLY ####################################
 
