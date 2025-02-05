@@ -291,11 +291,10 @@ export const votePageTemplate = `
 
             async saveVotes() {
                 if (this.selectedTasks.length === 0) return;
-                console.log('Saving votes for', this.selectedTasks.length, 'tasks');
 
                 const currentWeights = this.weights[this.selectedTasks.length];
                 if (!currentWeights) {
-                    alert('Invalid number of selections');
+                    console.error('Invalid number of selections');
                     return;
                 }
 
@@ -310,28 +309,21 @@ export const votePageTemplate = `
                     timestamp: new Date().toISOString()
                 };
 
-                console.log('Vote data prepared:', voteData);
-
                 try {
                     // Save to localStorage as backup
                     localStorage.setItem('taskVotes', JSON.stringify(voteData));
-                    console.log('Votes saved to localStorage');
+                    console.log('Votes saved to localStorage:', voteData);
                     
                     // Send data to the parent process
                     window.parent.postMessage({
                         type: 'VOTE_DATA',
                         data: voteData
                     }, '*');
-
-                    alert('Votes saved successfully! You can now close this page.\\n\\n' + 
-                          'Selected Tasks: ' + voteData.selectedTasks.length + '\\n' +
-                          JSON.stringify(votes, null, 2));
                     
                     // Disable the submit button to prevent double submission
                     document.getElementById('submitVote').disabled = true;
                 } catch (error) {
                     console.error('Error saving votes:', error);
-                    alert('Failed to save votes. Please try again.');
                 }
             }
         }

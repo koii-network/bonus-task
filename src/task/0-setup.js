@@ -9,6 +9,13 @@ import http from 'http';
 export async function setup() {
   try {
     console.log("CUSTOM SETUP");
+
+    // Check if votes already exist
+    const existingVotes = await namespaceWrapper.storeGet("votes");
+    if (existingVotes) {
+      console.log("Votes already exist in database, skipping voting page");
+      return true;
+    }
     
     // Create a simple server to receive vote data
     const server = http.createServer((req, res) => {
@@ -50,11 +57,9 @@ export async function setup() {
               throw new Error('Vote weights do not sum to 1');
             }
 
-            const roundNumber = await namespaceWrapper.getRound();
-            
-            // Store vote data with round number
+            // Store vote data with simplified key
             await namespaceWrapper.storeSet(
-              `votes_${roundNumber}`,
+              "votes",
               JSON.stringify({
                 selectedTasks: voteData.selectedTasks,
                 votes: voteData.votes.map((vote, index) => ({
@@ -65,13 +70,16 @@ export async function setup() {
               })
             );
             
-            console.log(`Votes stored for round ${roundNumber}:`, {
+            console.log("Votes stored successfully:", {
               selectedTasks: voteData.selectedTasks,
               votes: voteData.votes
             });
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ success: true }));
+
+            // Close the server after successful vote
+            server.close();
           } catch (error) {
             console.error('Error storing votes:', error);
             res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -118,17 +126,29 @@ export async function setup() {
           body: JSON.stringify(voteData),
           mode: 'cors'
         });
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Server returned ' + response.status);
         }
+
         const result = await response.json();
         if (!result.success) throw new Error(result.error || 'Failed to store votes');
-        console.log('Vote data sent successfully');
+
+        // Show success message with vote details
+        const voteDetails = voteData.votes.map((vote, index) => {
+          const task = voteData.selectedTasks[index];
+          const percentage = (vote.weight * 100).toFixed(0);
+          return \`Task \${index + 1}: \${task} (\${percentage}%)\`;
+        }).join('\\n');
+
+        alert(\`Votes saved successfully! It's now safe to close this page.\`);
+
+        // Try to close the window
+        window.close();
       } catch (error) {
         console.error('Error:', error);
-        alert('Failed to store votes on the node: ' + error.message);
-        return;
+        alert(\`Failed to store votes: \${error.message}\\nPlease try again.\`);
       }
     `;
 
