@@ -1,6 +1,4 @@
 import { namespaceWrapper } from "@_koii/namespace-wrapper";
-import { getDataFromCID } from "../modules/getDataFromCID.js";
-
 const SLASH_PERCENT = 0;
 
 export async function distribution(submitters, bounty, roundNumber) {
