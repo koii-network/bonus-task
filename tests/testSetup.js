@@ -33,7 +33,6 @@ async function testSetup() {
         console.log('✅ Voting page file created successfully');
 
         console.log('\nAll tests passed successfully! ✨');
-        console.log('The voting page should now be open in your browser.');
         process.exit(0);
     } catch (error) {
         console.error('\n❌ Test failed:', error.message);

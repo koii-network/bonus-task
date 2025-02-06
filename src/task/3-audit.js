@@ -14,7 +14,7 @@ export async function audit(submission, roundNumber, submitterKey) {
   try {
     const cid = submission;
     // Fetch and validate the data
-    const data = await getDataFromCID("distribution_proposal.json", cid);
+    const data = await getDataFromCID("vote.json", cid);
     if (
       !data ||
       !data.user_vote ||
@@ -299,7 +299,7 @@ async function processSubmissions(
     console.log(`Processing submission for ${key} with CID: ${cid}`);
 
     try {
-      const cidData = await getDataFromCID("distribution_proposal.json", cid);
+      const cidData = await getDataFromCID("vote.json", cid);
 
       if (
         !cidData ||

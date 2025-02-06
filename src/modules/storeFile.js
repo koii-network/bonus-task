@@ -5,16 +5,16 @@ export async function storeInFile(distribution_proposal) {
   try {
     const getBasePath = await namespaceWrapper.getBasePath();
 
-    let distributionProposalPath = getBasePath.endsWith("/")
-      ? `${getBasePath}distribution_proposal.json`
-      : `${getBasePath}/distribution_proposal.json`;
+    let votePath = getBasePath.endsWith("/")
+      ? `${getBasePath}vote.json`
+      : `${getBasePath}/vote.json`;
 
     writeFileSync(
-      distributionProposalPath,
+      votePath,
       JSON.stringify(distribution_proposal, null, 2),
     );
 
-    return distributionProposalPath;
+    return votePath;
   } catch (error) {
     console.error("Error writing distribution proposal to file", error);
     return "";
