@@ -46,16 +46,11 @@ export async function distribution(submitters, bounty, roundNumber) {
       return distributionList;
     }
 
-    const distData = await namespaceWrapper.storeGet("dist_" + roundNumber);
+    const distribution_proposal = await namespaceWrapper.storeGet(
+      "finalDistributionList_" + roundNumber,
+    );
 
-    console.log("Distribution data from storeGet:", distData);
-
-    if (!distData) {
-      console.log("No distribution data found for round:", roundNumber);
-      return distributionList;
-    }
-
-    const { distribution_proposal } = distData;
+    console.log("Distribution data from storeGet:", distribution_proposal);
 
     if (!distribution_proposal) {
       console.log(
@@ -70,32 +65,8 @@ export async function distribution(submitters, bounty, roundNumber) {
       Object.keys(distribution_proposal).length,
     );
 
-    let taskState;
-    try {
-      taskState = await namespaceWrapper.getTaskState({
-        is_submission_required: true,
-      });
-    } catch (error) {
-      console.error("Error getting task state:", error.message);
-      return distributionList;
-    }
-
-    if (!taskState || !taskState.submissions) {
-      console.log("Invalid task state or missing submissions");
-      return distributionList;
-    }
-
-    const { submissions } = taskState;
-    const currentSubmission = submissions[roundNumber];
-
-    console.log("Get currentSubmission", currentSubmission);
-
-    if (!currentSubmission) {
-      console.log("Key not found in submissions for round:", roundNumber);
-      return distributionList;
-    }
-
-    for (const key of Object.keys(currentSubmission)) {
+    for (const [key, value] of Object.entries(distribution_proposal)) {
+      console.log(`Key: ${key}, Value: ${value}`);
       // Skip if the submitter is not in the approved list
       if (!approvedSubmitters.includes(key)) {
         console.log(
@@ -104,50 +75,7 @@ export async function distribution(submitters, bounty, roundNumber) {
         continue;
       }
 
-      const cid = currentSubmission[key].submission_value;
-      console.log(`Processing submission for ${key} with CID: ${cid}`);
-
-      try {
-        const cidData = await getDataFromCID("distribution_proposal.json", cid);
-        if (
-          !cidData ||
-          !cidData.distribution_proposal ||
-          !cidData.distribution_proposal.getStakingKeys
-        ) {
-          console.log("Invalid or missing data in CID response");
-          continue;
-        }
-
-        const { getKoiiStakingKey, getKPLStakingKey } =
-          cidData.distribution_proposal.getStakingKeys;
-
-        console.log("Checking KOII wallet:", getKoiiStakingKey);
-        console.log("Checking KPL wallet:", getKPLStakingKey);
-        console.log(
-          "The number of distribution proposal available:",
-          Object.keys(distribution_proposal).length,
-        );
-
-        // Check if either KPL or KOII staking wallet exists in distribution_proposal
-        const kplBounty = distribution_proposal[getKPLStakingKey] || 0;
-        const koiiBounty = distribution_proposal[getKoiiStakingKey] || 0;
-        const currentBounty = Math.max(kplBounty, koiiBounty);
-
-        if (currentBounty > 0) {
-          distributionList[getKoiiStakingKey] = currentBounty;
-          console.log(
-            `Assigned highest bounty ${currentBounty} to KOII wallet ${getKoiiStakingKey} (KPL: ${kplBounty}, KOII: ${koiiBounty})`,
-          );
-        } else {
-          distributionList[getKoiiStakingKey] = 0;
-          console.log(
-            `No bounty found for either KPL wallet ${getKPLStakingKey} or KOII wallet ${getKoiiStakingKey}`,
-          );
-        }
-      } catch (error) {
-        console.error("Error processing submission:", error.message);
-        continue;
-      }
+      distributionList[key] = value;
     }
 
     console.log("Final distributionList:", distributionList);

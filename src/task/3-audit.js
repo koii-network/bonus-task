@@ -201,7 +201,7 @@ export async function audit(submission, roundNumber, submitterKey) {
 
         await namespaceWrapper.storeSet(
           "finalDistributionList_" + roundNumber,
-          finalDistributionList,
+          distribution_proposal,
         );
 
         return true;
