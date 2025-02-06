@@ -112,7 +112,7 @@ environment: "PRODUCTION"
 #################################### FOR UPDATING TASKS ONLY ####################################
 
 ## Old Task ID ##
-task_id: "C9ZuxBbNsa5kDvP7EdPTW7QxRtZ55dWpQ8UPRBGfURSc"
+task_id: "4aXhrUtAEcZS4sni5HDJ6NawghxScBzUs21uPjvHemyi"
 
 ## Migration Description ##
-migrationDescription: "Fix a check distribution issue"
+migrationDescription: "Improve task behavior. Fix a check distribution issue. Add Astrolink Task to the task list."
