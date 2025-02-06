@@ -56,7 +56,7 @@ import { distribution } from "../src/task/4-distribution.js";
     },
   ];
 
-  const bounty = 0;
+  const bounty = 20;
   const roundNumber = 10;
 
   const finalDistributionList = {
@@ -124,6 +124,6 @@ import { distribution } from "../src/task/4-distribution.js";
   );
 
   // take from the local db
-  const res = await distribution(submitter, 20, 10);
+  const res = await distribution(submitter, bounty, 10);
   console.log("Distribution result:", res);
 })();
