@@ -3,7 +3,6 @@ import { distribution } from "../src/task/4-distribution.js";
 
 // Run the test
 (async () => {
-  //  FOR TESTNET
   const submitter = [
     {
       publicKey: "1fZfLS1tGHhZpncWFPEP9Gfd5m772gZ7t3koSHKyRGQ",
@@ -125,14 +124,6 @@ import { distribution } from "../src/task/4-distribution.js";
   );
 
   // take from the local db
-  const RESULT_TESTNET = await distribution(submitter, 20, 10);
-  console.log("Distribution result:", RESULT_TESTNET);
-
-  //  FOR MAINNET
-  // const RESULT_MAINNET = await audit(
-  //   "", // update the CID HERE
-  //   10,
-  //   "J4j4BdVwua62r37uHM7S8nkpGnxesxq87zrdrVxuq8Sn",
-  // );
-  // console.log("Audit result:", RESULT_MAINNET);
+  const res = await distribution(submitter, 20, 10);
+  console.log("Distribution result:", res);
 })();
