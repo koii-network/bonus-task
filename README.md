@@ -13,6 +13,7 @@ To help these new launches succeed and ensure developers get immediate access to
 ## Which Tasks are Eligible?
 
 Run these tasks to earn your bonus:
+
 - Mask Social Feeds
 - Free Fire Task
 - Big Big Task

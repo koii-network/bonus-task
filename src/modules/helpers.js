@@ -78,10 +78,10 @@ function calculateWeight(user, alpha = 0.5) {
   let developerBonus = 0;
 
   // Sum submissions with validation
-  if (user.submissions && typeof user.submissions === 'object') {
+  if (user.submissions && typeof user.submissions === "object") {
     for (const task in user.submissions) {
       const submission = user.submissions[task];
-      if (typeof submission === 'number' && !isNaN(submission)) {
+      if (typeof submission === "number" && !isNaN(submission)) {
         submissionWeight += submission;
 
         // Developer bonus
@@ -94,10 +94,10 @@ function calculateWeight(user, alpha = 0.5) {
   }
 
   // Sum stakes with validation
-  if (user.stakes && typeof user.stakes === 'object') {
+  if (user.stakes && typeof user.stakes === "object") {
     for (const task in user.stakes) {
       const stake = user.stakes[task];
-      if (typeof stake === 'number' && !isNaN(stake)) {
+      if (typeof stake === "number" && !isNaN(stake)) {
         stakeWeight += stake;
       }
     }
@@ -105,10 +105,11 @@ function calculateWeight(user, alpha = 0.5) {
 
   // Final weight calculation with validation
   const finalWeight = Math.floor(
-    alpha * stakeWeight + beta * (submissionWeight + developerBonus) * 1e9
+    alpha * stakeWeight + beta * (submissionWeight + developerBonus) * 1e9,
   );
 
   return finalWeight;
 }
+
 
 export { checkSumTally, calculateRewards };
