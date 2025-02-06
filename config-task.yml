@@ -58,7 +58,7 @@ submission_window: 800
 
 ## Minimum Stake Amount ##
 # The minimum amount of KOII that a user must stake in order to participate in the task.
-minimum_stake_amount: 0.1
+minimum_stake_amount: 9.9
 
 ## Task Bounty Type ##
 # KOII or KPL
@@ -88,7 +88,7 @@ allowed_failed_distributions: 3
 # Expected Task Data Size in MBs for the account size.
 # Minimums: 2 for whitelisted tasks, 1 for production, 0.1 for testing.
 # See https://www.koii.network/docs/develop/command-line-tool/create-task-cli/create-task#space for calculation details.
-space: 0.1
+space: 1
 
 ## Requirement Tags (Optional) ##
 # To add more global variables and task variables, please refer to the type, value, description format shown below.
