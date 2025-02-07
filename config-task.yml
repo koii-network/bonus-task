@@ -58,7 +58,7 @@ submission_window: 800
 
 ## Minimum Stake Amount ##
 # The minimum amount of KOII that a user must stake in order to participate in the task.
-minimum_stake_amount: 9.9
+minimum_stake_amount: 1.9
 
 ## Task Bounty Type ##
 # KOII or KPL
