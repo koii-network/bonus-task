@@ -10,6 +10,12 @@ export async function audit(submission, roundNumber, submitterKey) {
     
     // Process all submissions to collect data from CIDs
     for (const [koiiStakingKey, submission] of Object.entries(allSubmissions)) {
+      // Check if the submission is already processed
+      const stakingKey = await namespaceWrapper.storeGet(`staking_key_${koiiStakingKey}`);
+      const vote = await namespaceWrapper.storeGet(`votes_${koiiStakingKey}`);
+      if(stakingKey && vote) {
+        continue;
+      }
         try {
             // Get data from CID
             const cidData = await getDataFromCID(submission.submission_value);
