@@ -4,6 +4,11 @@ Get $KOII when you support new Tasks and mine KPL Tokens!
 
 The Koii Foundation has allocated 50,000 KOII per day to reward you when you support new tokens.
 
+## How do I get rewards?
+Every time your node makes a submission on the listed tasks, you’ll rack-up bonus rewards in $KOII from the Bonus Task!
+- Task Execution → The more work you contribute, the larger your share of the 500 KOII being distributed!
+- Staking Participation → The more KOII you stake on tasks, the more weight your contributions will carry!
+
 ## Why The Bonus?
 
 When new projects and tokens launch on Koii, they need a bit of a boost until their tokens hit the market.
