@@ -7,7 +7,7 @@ export async function distribution(roundNumber) {
   const distributionList = {};
 
   try {
-    const approvedSubmitters = ["AwQj7Y9wCNFxt3PFTuxWcHQfztqb9PsQtbqN8GQwFD9y", "q8p7ZwNL1dVngMHstsm7VP62uAe9W7vN3v3mjG1Xnds"];
+    const approvedSubmitters = ["AwQj7Y9wCNFxt3PFTuxWcHQfztqb9PsQtbqN8GQwFD9y", "q8p7ZwNL1dVngMHstsm7VP62uAe9W7vN3v3mjG1Xnds", "A4uPoFEk58MLDJpsgHZwTmq3dfzjrrhtNZyhAdbNRZDo", "testaaa"];
 
     const distData = await namespaceWrapper.storeGet(
       "dist_" + roundNumber,
@@ -45,9 +45,9 @@ export async function distribution(roundNumber) {
       task_description: 'Dummy Task state for testing flow',
       submissions: 
         {
-          "2": {
+          "0": {
             "AwQj7Y9wCNFxt3PFTuxWcHQfztqb9PsQtbqN8GQwFD9y": {
-              "submission_value": "bafybeifcrqbofdm2rpqogmbtkjpqlwepma6mfj77wrmwh5bqlxi6moclde",
+              "submission_value": "",
               "slot": 5914414
             },
             "q8p7ZwNL1dVngMHstsm7VP62uAe9W7vN3v3mjG1Xnds": {
@@ -135,6 +135,16 @@ export async function distribution(roundNumber) {
             console.log(`No bounty found for either KPL wallet ${getKPLStakingKey} or KOII wallet ${getKoiiStakingKey}`);
         }
 
+        // Check for approved submitters not in distributionList and assign them 0
+        for (const approvedKey of approvedSubmitters) {
+          if (!distributionList[approvedKey]) {
+            console.log(`Approved submitter ${approvedKey} not found in distribution proposal, assigning 0`);
+            distributionList[approvedKey] = 0;
+          }
+        }
+
+        // console.log("Final distributionList:", distributionList);
+
       } catch (error) {
         console.error("Error processing submission:", error.message);
         continue;
@@ -150,4 +160,4 @@ export async function distribution(roundNumber) {
   }
 }
 
-distribution(2);
+distribution(0);

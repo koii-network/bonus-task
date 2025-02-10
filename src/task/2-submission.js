@@ -27,7 +27,7 @@ export async function submission(roundNumber) {
       Object.keys(distribution_proposal).length === 0 ||
       !getStakingKeys
     ) {
-      return "";
+      return null;
     }
 
     const getFilePath = await storeInFile({
@@ -36,7 +36,7 @@ export async function submission(roundNumber) {
     console.log("getFilePath", getFilePath);
 
     if (getFilePath === "") {
-      return "";
+      return null;
     }
 
     const getCID = await getSubmissionCID(getFilePath);
