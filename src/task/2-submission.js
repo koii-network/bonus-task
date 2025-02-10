@@ -14,13 +14,13 @@ export async function submission(roundNumber) {
     const distData = await namespaceWrapper.storeGet("vote_" + roundNumber);
     if (!distData) {
       console.log("No vote data found for round:", roundNumber);
-      return "";
+      return null;
     }
 
     const { getStakingKeys, vote } = distData;
     if (!getStakingKeys || !vote) {
       console.log("Missing required data in distribution data");
-      return "";
+      return null;
     }
 
     // Create the submission data structure
@@ -35,23 +35,23 @@ export async function submission(roundNumber) {
     const filePath = await storeInFile(submissionData);
     console.log("Submission data stored in file:", submissionData);
 
-    if (filePath === "") {
+    if (filePath === null) {
       console.log("Failed to store submission data in file");
-      return "";
+      return null;
     }
 
     // Upload the file and get CID
     const cid = await getSubmissionCID(filePath);
     if (!cid) {
       console.log("Failed to get CID for submission");
-      return "";
+      return null;
     }
 
     console.log("Submission completed with CID:", cid);
     return cid;
   } catch (error) {
     console.error("MAKE SUBMISSION ERROR:", error);
-    return "";
+    return null;
   }
 }
 
