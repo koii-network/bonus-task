@@ -11,19 +11,17 @@ export async function audit(submission, roundNumber, submitterKey) {
     
     // Process all submissions to collect data from CIDs
     for (const [koiiStakingKey, submission] of Object.entries(allSubmissions)) {
-        console.log(`\nProcessing submission for key: ${koiiStakingKey}`);
         
         // Check if the submission is already processed
         const stakingKey = await namespaceWrapper.storeGet(`staking_key_${koiiStakingKey}`);
         const vote = await namespaceWrapper.storeGet(`votes_${koiiStakingKey}`);
         if (stakingKey && vote) {
             console.log(`Already processed for key ${koiiStakingKey}`);
-            console.log('Stored staking key:', stakingKey);
-            console.log('Stored vote:', vote);
             continue;
         }
         
         try {
+            console.log(`\nProcessing submission for key: ${koiiStakingKey}`);
             // Get data from CID
             const cidData = await getDataFromCID(submission.submission_value);
             await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
@@ -102,15 +100,7 @@ export async function audit(submission, roundNumber, submitterKey) {
         }
     }
     
-    // After normalization
-    console.log('\nNormalized weights:');
-    for (const [taskId, weight] of Object.entries(weighting_factors)) {
-        console.log(`Task ${taskId}: ${weight}`);
-    }
-    
-    // Store the final weighting factors
-    await namespaceWrapper.storeSet('final_weighting_factors', JSON.stringify(weighting_factors));
-    
+    console.log("Final weighting factors for round:", roundNumber, weighting_factors);
     return {
         stakingKeyPairs: {}, // Already stored in namespace
         userVotes: {},      // Already stored in namespace

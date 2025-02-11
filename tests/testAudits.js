@@ -2,7 +2,7 @@ import { namespaceWrapper } from "@_koii/namespace-wrapper";
 import { taskList } from "../src/modules/globalList.js";
 
 // Run the test
-async function testAudit() {
+async function testAudit(submission, roundNumber, submitterKey) {
   // Create dummy submissions that match the real submission format
   const dummySubmissions = {
     koiiStakingKey1: {
@@ -109,7 +109,6 @@ async function testAudit() {
   
   // Process all submissions to collect data from CIDs
   for (const [koiiStakingKey, submission] of Object.entries(dummySubmissions)) {
-    console.log(`\nProcessing submission for key: ${koiiStakingKey}`);
     
     // Check if the submission is already processed
     const stakingKey = await namespaceWrapper.storeGet(`staking_key_${koiiStakingKey}`);
@@ -124,7 +123,7 @@ async function testAudit() {
     try {
         // Get data from CID
         const cidData = submission.data;
-        
+        console.log(`\nProcessing submission for key: ${koiiStakingKey}`);
         // Parse the vote_0 data
         if (cidData.user_vote) {
             const { getStakingKeys, vote } = cidData.user_vote;
@@ -187,7 +186,6 @@ async function testAudit() {
       console.error(`Error processing votes for key ${koiiStakingKey}:`, error);
     }
   }
-  console.log(`Total weight before normalization: ${totalWeight}`);
 
   // Normalize weights to sum to 1
   if (totalWeight > 0) {
@@ -204,18 +202,8 @@ async function testAudit() {
     }
   }
 
-  // After normalization
-  console.log('\nNormalized weights:');
-  for (const [taskId, weight] of Object.entries(weighting_factors)) {
-    console.log(`Task ${taskId}: ${weight}`);
-  }
-
-  // Store the final weighting factors
-  await namespaceWrapper.storeSet(
-    "final_weighting_factors",
-    JSON.stringify(weighting_factors),
-  );
+  console.log("Final weighting factors for round:", roundNumber, weighting_factors);
 }
 
 // Run the test
-testAudit();
+testAudit('', 0, '');
