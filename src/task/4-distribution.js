@@ -70,53 +70,9 @@ export async function distribution(submitters, bounty, roundNumber) {
       Object.keys(distribution_proposal).length,
     );
 
-    let taskState;
-    try {
-      taskState = await namespaceWrapper.getTaskState({
-        is_submission_required: true,
-      });
-    } catch (error) {
-      console.error("Error getting task state:", error.message);
-      return distributionList;
-    }
+    for (const key of Object.keys(approvedSubmitters)) {
 
-    if (!taskState || !taskState.submissions) {
-      console.log("Invalid task state or missing submissions");
-      return distributionList;
-    }
-
-    const { submissions } = taskState;
-    const currentSubmission = submissions[roundNumber];
-
-    console.log("Get currentSubmission", currentSubmission);
-
-    if (!currentSubmission) {
-      console.log("Key not found in submissions for round:", roundNumber);
-      return distributionList;
-    }
-
-    for (const key of Object.keys(currentSubmission)) {
-      // Skip if the submitter is not in the approved list
-      if (!approvedSubmitters.includes(key)) {
-        console.log(
-          `Skipping submission from ${key} as they are not in approved submitters list`,
-        );
-        continue;
-      }
-
-      const cid = currentSubmission[key].submission_value;
       console.log(`Processing submission for ${key} with CID: ${cid}`);
-
-      try {
-        const cidData = await getDataFromCID("distribution_proposal.json", cid);
-        if (
-          !cidData ||
-          !cidData.distribution_proposal ||
-          !cidData.distribution_proposal.getStakingKeys
-        ) {
-          console.log("Invalid or missing data in CID response");
-          continue;
-        }
 
         const { getKoiiStakingKey, getKPLStakingKey } =
           cidData.distribution_proposal.getStakingKeys;
@@ -144,10 +100,6 @@ export async function distribution(submitters, bounty, roundNumber) {
             `No bounty found for either KPL wallet ${getKPLStakingKey} or KOII wallet ${getKoiiStakingKey}`,
           );
         }
-      } catch (error) {
-        console.error("Error processing submission:", error.message);
-        continue;
-      }
     }
 
     console.log("Final distributionList:", distributionList);
