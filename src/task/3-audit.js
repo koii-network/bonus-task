@@ -25,12 +25,11 @@ async function generateTaskWeight(roundNumber) {
   // Process all submissions to collect data from CIDs
   for (const [koiiStakingKey, submission] of Object.entries(allSubmissions)) {
     // Check if the submission is already processed
-    const stakingKey = await namespaceWrapper.storeGet(
-      `staking_key_${koiiStakingKey}`,
+    let cidCheck = await namespaceWrapper.storeGet(
+      `vote_cid_${koiiStakingKey}`,
     );
-    const vote = await namespaceWrapper.storeGet(`votes_${koiiStakingKey}`);
-    if (stakingKey && vote) {
-      console.log(`Already processed for key ${koiiStakingKey}`);
+    if (cidCheck === submission.submission_value) {
+      console.log(`CID already processed for key ${koiiStakingKey}`);
       continue;
     }
 
@@ -38,6 +37,10 @@ async function generateTaskWeight(roundNumber) {
       console.log(`\nProcessing submission for key: ${koiiStakingKey}`);
       // Get data from CID
       const cidData = await getDataFromCID(submission.submission_value);
+      await namespaceWrapper.storeSet(
+        `vote_cid_${koiiStakingKey}`,
+        submission.submission_value,
+      );
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second
 
       // Parse the vote_0 data

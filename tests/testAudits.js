@@ -206,7 +206,7 @@ async function generateTaskWeight(roundNumber) {
   // Create dummy submissions that match the real submission format
   const dummySubmissions = {
     koiiStakingKey1: {
-      submission_value: "cid1",
+      submission_value: "cid11",
       data: {
         user_vote: {
           getStakingKeys: {
@@ -309,17 +309,13 @@ async function generateTaskWeight(roundNumber) {
 
   // Process all submissions to collect data from CIDs
   for (const [koiiStakingKey, submission] of Object.entries(dummySubmissions)) {
-    // Check if the submission is already processed
-    const stakingKey = await namespaceWrapper.storeGet(
-      `staking_key_${koiiStakingKey}`,
-    );
-    const vote = await namespaceWrapper.storeGet(`votes_${koiiStakingKey}`);
-    if (stakingKey && vote) {
-      console.log(`Already processed for key ${koiiStakingKey}`);
-      console.log("Stored staking key:", stakingKey);
-      console.log("Stored vote:", vote);
+    let cidCheck = await namespaceWrapper.storeGet(`vote_cid_${koiiStakingKey}`);
+    console.log("cidCheck", cidCheck);
+    if (cidCheck === submission.submission_value) {
+      console.log(`CID already processed for key ${koiiStakingKey}`);
       continue;
     }
+    await namespaceWrapper.storeSet(`vote_cid_${koiiStakingKey}`, submission.submission_value);
 
     try {
       // Get data from CID
