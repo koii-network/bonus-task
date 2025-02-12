@@ -1,110 +1,229 @@
 import { namespaceWrapper } from "@_koii/namespace-wrapper";
 import { getDataFromCID } from "../modules/getDataFromCID.js";
+import { taskList, developerKey } from "../modules/globalList.js";
 import { calculateRewards, checkSumTally } from "../modules/helpers.js";
 import bs58 from "bs58";
 import { REWARD_PER_ROUND } from "../config/constants.js";
 
 export async function audit(submission, roundNumber, submitterKey) {
-  /**
-   * Audit a submission
-   * This function should return true if the submission is correct, false otherwise
-   */
-  console.log(`AUDIT SUBMISSION FOR ROUND ${roundNumber} from ${submitterKey}`);
-
   try {
-    const cid = submission;
-    // Fetch and validate the data
-    const data = await getDataFromCID("vote.json", cid);
-    if (
-      !data ||
-      !data.user_vote ||
-      !data.user_vote.vote ||
-      !data.user_vote.getStakingKeys
-    ) {
-      console.log("Failed to fetch data from CID");
-      return false;
+    if (!(await namespaceWrapper.storeGet(`dist_${roundNumber}`))) {
+      const weighting_factors = await generateTaskWeight(roundNumber);
+      if (!weighting_factors) {
+        throw new Error('Failed to generate task weights');
+      }
+      await generateDistributionProposal(weighting_factors, roundNumber);
+    } else {
+      console.log(
+        `Distribution proposal already exists for round ${roundNumber}`,
+      );
+    }
+    return true;
+  } catch (error) {
+    console.error(`Error in audit function for round ${roundNumber}:`, error);
+  }
+}
+
+async function generateTaskWeight(roundNumber) {
+  try {
+    // Get all submissions for the round
+    const allSubmissions = await namespaceWrapper.getTaskSubmissionInfo(roundNumber);
+    if (!allSubmissions) {
+      throw new Error(`No submissions found for round ${roundNumber}`);
     }
 
-    const getStakingKeys = data.user_vote.getStakingKeys;
+    console.log(`Processing ${Object.keys(allSubmissions).length} submissions for round ${roundNumber}`);
 
-    if (!getStakingKeys.getKoiiStakingKey || !getStakingKeys.getKPLStakingKey) {
-      console.log("No staking keys found in CID");
-      return false;
-    }
-
-    const user_vote = data.user_vote.vote;
-
-    // Check if user_vote is empty
-    if (Object.keys(user_vote).length === 0) {
-      console.log("The vote object is empty.");
-      return false;
-    }
-
-    // get the current task submission
-    let currentTaskState;
-    try {
-      currentTaskState = await namespaceWrapper.getTaskState({
-        is_submission_required: true,
-      });
-    } catch (error) {
-      console.error("Error getting task state:", error.message);
-      return false;
-    }
-
-    if (!currentTaskState || !currentTaskState.submissions) {
-      console.log("Invalid task state or missing submissions");
-      return false;
-    }
-
-    try {
-      const roundBeginSlot =
-        currentTaskState.starting_slot +
-        roundNumber * currentTaskState.round_time;
-      const currentSlot = await namespaceWrapper.getSlot();
-
-      console.log("Round Begin Slot:", roundBeginSlot);
-      console.log("Current Slot:", currentSlot);
-
-      // Check if the current slot is within in 1 minute of the round begin slot
-      if (roundBeginSlot + 600 >= currentSlot) {
-        let taskList = [];
-        let weighting_factors = {};
-
-        // Populate taskList and weighting_factors
-        for (const [taskId, taskDetails] of Object.entries(user_vote)) {
-          taskList.push({ id: taskId, type: taskDetails.type });
-          weighting_factors[taskId] = taskDetails.weighting_factors;
+    // Process all submissions to collect data from CIDs
+    for (const [koiiStakingKey, submission] of Object.entries(allSubmissions)) {
+      try {
+        // Check if the submission is already processed
+        let cidCheck = await namespaceWrapper.storeGet(
+          `vote_cid_${koiiStakingKey}`,
+        );
+        if (cidCheck === submission.submission_value) {
+          console.log(`CID already processed for key ${koiiStakingKey}`);
+          continue;
+        }
+        // Get data from CID
+        const cidData = await getDataFromCID(submission.submission_value);
+        if (!cidData) {
+          throw new Error(`Failed to fetch data from CID: ${submission.submission_value}`);
         }
 
-        console.log("Task List:", taskList);
-        console.log("Weighting Factors:", weighting_factors);
+        await namespaceWrapper.storeSet(
+          `vote_cid_${koiiStakingKey}`,
+          submission.submission_value,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second
 
-        if (
-          taskList.length === 0 ||
-          Object.keys(weighting_factors).length === 0
-        ) {
-          console.log("Both taskList or weighting_factors are empty.");
-          return false;
+        // Parse the vote_0 data
+        if (cidData.user_vote) {
+          const { getStakingKeys, vote } = cidData.user_vote;
+          if (!getStakingKeys || !vote) {
+            throw new Error('Invalid user vote data structure');
+          }
+
+          console.log("Processing user vote data:");
+          console.log("- Vote:", vote);
+
+          // Store staking key pairs
+          await namespaceWrapper.storeSet(
+            `staking_key_${getStakingKeys.getKoiiStakingKey}`,
+            getStakingKeys.getKPLStakingKey,
+          );
+          console.log(
+            `Stored staking key pair: ${getStakingKeys.getKoiiStakingKey} -> ${getStakingKeys.getKPLStakingKey}`,
+          );
+
+          // Store votes with formatted key
+          const voteKey = `votes_${getStakingKeys.getKoiiStakingKey}`;
+          await namespaceWrapper.storeSet(voteKey, vote);
+          console.log(`Stored vote data with key: ${voteKey}`);
+        } else {
+          console.log("No user_vote data found in CID data");
+        }
+      } catch (error) {
+        console.error(
+          `Error processing submission for key ${koiiStakingKey}:`,
+          error.message,
+        );
+        // Continue with next submission instead of breaking the entire process
+        continue;
+      }
+    }
+
+    // Initialize weighting_factors with all tasks from taskList
+    const weighting_factors = {};
+    const taskComments = {};
+
+    if (!taskList || taskList.length === 0) {
+      throw new Error('Task list is empty or invalid');
+    }
+
+    // Create mapping of task IDs to their comments
+    taskList.forEach((task) => {
+      if (!task.id) {
+        throw new Error('Invalid task entry: missing ID');
+      }
+      weighting_factors[task.id] = 0;
+      // Extract comment if it exists in the line after the ID
+      const comment = task.id.match(/\/\/ (.+)$/);
+      taskComments[task.id] = comment ? comment[1].trim() : "";
+    });
+
+    // Add debug logs for weight calculation
+    console.log("\nCalculating final weights:");
+    let totalWeight = 0;
+    for (const [koiiStakingKey, submission] of Object.entries(allSubmissions)) {
+      try {
+        const voteString = await namespaceWrapper.storeGet(
+          `votes_${koiiStakingKey}`,
+        );
+        if (!voteString) continue;
+
+        const voteData = JSON.parse(voteString);
+        if (!voteData || !voteData.votes) {
+          throw new Error('Invalid vote data structure');
         }
 
-        const getAllTaskStates = await getTaskState(taskList);
-        const users = {};
+        const votes = voteData.votes;
+        for (const [taskId, taskData] of Object.entries(votes)) {
+          if (taskId in weighting_factors) {
+            if (typeof taskData.weighting_factors !== 'number' || isNaN(taskData.weighting_factors)) {
+              console.warn(`Invalid weighting factor for task ${taskId}: ${taskData.weighting_factors}`);
+              continue;
+            }
+            weighting_factors[taskId] += taskData.weighting_factors;
+            totalWeight += taskData.weighting_factors;
+          }
+        }
+      } catch (error) {
+        console.error(`Error processing votes for key ${koiiStakingKey}:`, error.message);
+        // Continue with next submission
+        continue;
+      }
+    }
 
-        for (const taskStates of getAllTaskStates) {
-          const { taskId } = taskStates;
-          const { submissions, stake_list, task_manager } = taskStates.data;
+    // Normalize weights to sum to 1
+    if (totalWeight > 0) {
+      for (const taskId in weighting_factors) {
+        weighting_factors[taskId] = Number(
+          (weighting_factors[taskId] / totalWeight).toFixed(1),
+        );
+      }
+    } else {
+      // If no votes, distribute weights equally
+      const equalWeight = 1 / Object.keys(weighting_factors).length;
+      for (const taskId in weighting_factors) {
+        weighting_factors[taskId] = Number(equalWeight.toFixed(1));
+      }
+    }
 
-          // submission weights and only get the last five submissions
-          const lastFiveKeys = Object.keys(submissions)
-            .map(Number)
-            .sort((a, b) => a - b)
-            .slice(-5);
+    console.log(
+      "Final weighting factors for round:",
+      roundNumber,
+      weighting_factors,
+    );
 
-          // get the sum of all the submission weights
-          for (const lastFiveKey of lastFiveKeys) {
+    return weighting_factors;
+  } catch (error) {
+    console.error(`Error in generateTaskWeight for round ${roundNumber}:`, error);
+  }
+}
+
+async function generateDistributionProposal(weighting_factors, roundNumber) {
+  try {
+    console.log(`Generating Distribution Proposal for round ${roundNumber}`);
+    
+    if (!weighting_factors || Object.keys(weighting_factors).length === 0) {
+      throw new Error('Invalid weighting factors provided');
+    }
+
+    const getTaskList = taskList;
+    const getWeightList = weighting_factors;
+    const getDeveloperKey = developerKey;
+
+    if (!getTaskList || !getDeveloperKey) {
+      throw new Error('Missing required task list or developer key data');
+    }
+
+    // Fetch all task states in parallel
+    const getAllTaskStates = await getTaskState(getTaskList);
+    if (!getAllTaskStates || getAllTaskStates.length === 0) {
+      throw new Error('Failed to fetch task states');
+    }
+
+    const users = {};
+
+    for (const taskStates of getAllTaskStates) {
+      try {
+        if (!taskStates || !taskStates.data) {
+          console.warn(`Invalid task state data for task ${taskStates?.taskId}`);
+          continue;
+        }
+
+        const { taskId } = taskStates;
+        const { submissions, stake_list, task_manager } = taskStates.data;
+
+        if (!submissions || !stake_list || !task_manager) {
+          console.warn(`Missing required data for task ${taskId}`);
+          continue;
+        }
+
+        // Get last five submissions
+        const lastFiveKeys = Object.keys(submissions)
+          .map(Number)
+          .sort((a, b) => a - b)
+          .slice(-5);
+
+        // Process submissions
+        for (const lastFiveKey of lastFiveKeys) {
+          try {
             const submission = submissions[`${lastFiveKey}`];
+            if (!submission) continue;
 
-            // kpl staking key
+            // Process KPL staking keys
             for (const itemKey of Object.keys(submission)) {
               if (stake_list.hasOwnProperty(itemKey)) {
                 if (!users[itemKey]) {
@@ -115,118 +234,146 @@ export async function audit(submission, roundNumber, submitterKey) {
                   };
                 }
 
-                users[itemKey].submissions[taskId] =
+                users[itemKey].submissions[taskId] = 
                   (users[itemKey].submissions[taskId] || 0) + 1;
                 users[itemKey].stakes[taskId] = stake_list[itemKey] / 1e9;
               }
             }
+          } catch (error) {
+            console.error(`Error processing submission ${lastFiveKey} for task ${taskId}:`, error.message);
+            continue;
           }
-
-          // const developerKey = await bs58.encode(task_manager);
-          // if (getDeveloperKey[developerKey]) {
-          //   const getTaskId = Object.keys(getDeveloperKey[developerKey])[0];
-          //   if (getTaskId === taskId) {
-          //     const kplStakingKey =
-          //       getDeveloperKey[developerKey][getTaskId].getKPLStakingKey;
-          //     if (!users[kplStakingKey]) {
-          //       users[kplStakingKey] = {
-          //         submissions: {},
-          //         stakes: {},
-          //         developerOf: {},
-          //       };
-          //       // Initialize submissions and stakes for this task
-          //       if (stake_list[kplStakingKey]) {
-          //         users[kplStakingKey].stakes[taskId] =
-          //           stake_list[kplStakingKey] / 1e9;
-          //       }
-          //     }
-          //     users[kplStakingKey].developerOf[taskId] = true;
-          //     console.log(
-          //       `Developer bonus set for ${kplStakingKey} on task ${taskId}`,
-          //     );
-          //   }
-          // }
         }
 
-        for (let stakingKey in users) {
-          let user = users[stakingKey];
-          if (user.submissions) {
-            for (let submissionKey in user.submissions) {
-              const getTaskSpecificWeight = weighting_factors[submissionKey];
-              if (
-                typeof getTaskSpecificWeight === "number" &&
-                !isNaN(getTaskSpecificWeight)
-              ) {
-                user.submissions[submissionKey] *= getTaskSpecificWeight;
-              } else {
-                console.warn(
-                  `Missing or invalid weight for task ${submissionKey}`,
-                );
-                user.submissions[submissionKey] *= 1;
+        // Process developer keys
+        try {
+          const developerKey = await bs58.encode(task_manager);
+          if (getDeveloperKey[developerKey]) {
+            const getTaskId = Object.keys(getDeveloperKey[developerKey])[0];
+            if (getTaskId === taskId) {
+              const kplStakingKey = 
+                getDeveloperKey[developerKey][getTaskId].getKPLStakingKey;
+              
+              if (!kplStakingKey) {
+                throw new Error(`Invalid KPL staking key for developer of task ${taskId}`);
               }
+
+              if (!users[kplStakingKey]) {
+                users[kplStakingKey] = {
+                  submissions: {},
+                  stakes: {},
+                  developerOf: {},
+                };
+                if (stake_list[kplStakingKey]) {
+                  users[kplStakingKey].stakes[taskId] = 
+                    stake_list[kplStakingKey] / 1e9;
+                }
+              }
+              users[kplStakingKey].developerOf[taskId] = true;
+              console.log(
+                `Developer bonus set for ${kplStakingKey} on task ${taskId}`,
+              );
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing developer key for task ${taskId}:`, error.message);
+        }
+      } catch (error) {
+        console.error(`Error processing task state for task ${taskStates?.taskId}:`, error.message);
+        continue;
+      }
+    }
+
+    // Apply weighting factors
+    for (let stakingKey in users) {
+      try {
+        let user = users[stakingKey];
+        if (user.submissions) {
+          for (let submissionKey in user.submissions) {
+            const getTaskSpecificWeight = getWeightList[submissionKey];
+            if (
+              typeof getTaskSpecificWeight === "number" &&
+              !isNaN(getTaskSpecificWeight)
+            ) {
+              const originalValue = user.submissions[submissionKey];
+              user.submissions[submissionKey] *= getTaskSpecificWeight;
+            } else {
+              console.warn(`Missing or invalid weight for task ${submissionKey}`);
+              user.submissions[submissionKey] *= 1;
             }
           }
         }
-
-        // console.log('Users object before reward calculation:', JSON.stringify(users, null, 2));
-
-        const distribution_proposal = await calculateRewards(
-          users,
-          REWARD_PER_ROUND,
-        );
-
-        const total_node_bonus = Object.values(distribution_proposal).reduce(
-          (a, b) => a + b,
-          0,
-        );
-        console.log("total_node_bonus:", total_node_bonus / 1e9);
-
-        let checkSumTotal = await checkSumTally(distribution_proposal);
-        console.log("checkSumTotal", checkSumTotal);
-
-        // get the final list of Distribution
-        const finalDistributionList = await processSubmissions(
-          currentTaskState,
-          roundNumber,
-          distribution_proposal,
-        );
-
-        if (Object.keys(finalDistributionList).length === 0) {
-          console.log(
-            "Empty distribution list in the audits: ",
-            Object.keys(finalDistributionList).length,
-          );
-          return false;
-        }
-
-        await namespaceWrapper.storeSet(
-          "finalDistributionList_" + roundNumber,
-          finalDistributionList,
-        );
-
-        return true;
-      } else {
-        console.log(
-          "Task missed the window to be executed, skip round",
-          roundNumber,
-        );
-        return false;
+      } catch (error) {
+        console.error(`Error processing weights for staking key ${stakingKey}:`, error.message);
       }
+    }
+
+    // Calculate rewards
+    const distribution_proposal = await calculateRewards(
+      users,
+      REWARD_PER_ROUND,
+    );
+
+    if (!distribution_proposal) {
+      throw new Error('Failed to calculate rewards distribution');
+    }
+
+    const total_node_bonus = Object.values(distribution_proposal).reduce(
+      (a, b) => a + b,
+      0,
+    );
+    console.log("Total node bonus:", total_node_bonus / 1e9);
+
+    // Get staking keys
+    try {
+      const getKoiiStakingKey = 
+        await namespaceWrapper.getSubmitterAccount("KOII");
+      const getKPLStakingKey = 
+        await namespaceWrapper.getSubmitterAccount("KPL");
+
+      if (!getKoiiStakingKey || !getKPLStakingKey) {
+        throw new Error('Failed to get staking keys');
+      }
+
+      const koiiPublicKey = getKoiiStakingKey.publicKey.toBase58();
+      const kplPublicKey = getKPLStakingKey.publicKey.toBase58();
+
+      const getStakingKeys = {
+        getKoiiStakingKey: koiiPublicKey,
+        getKPLStakingKey: kplPublicKey,
+      };
+
+      await namespaceWrapper.storeSet("dist_" + roundNumber, {
+        getStakingKeys,
+        distribution_proposal,
+      });
+
+      let checkSumTotal = await checkSumTally(distribution_proposal);
+      console.log("checkSumTotal", checkSumTotal);
     } catch (error) {
-      console.error("GENERATING Distribution Proposal ERROR:", error);
-      return false;
+      console.error('Error processing staking keys:', error.message);
+      throw error;
     }
   } catch (error) {
-    console.error("Error during audit:", error.message);
-    return false;
+    console.error("Error in generateDistributionProposal:", error.message);
+    console.error("Error stack:", error.stack);
+    throw error;
   }
 }
 
 async function getTaskState(taskList) {
   try {
+    if (!taskList || !Array.isArray(taskList) || taskList.length === 0) {
+      throw new Error('Invalid task list provided');
+    }
+
     const fetchPromises = taskList.map(async (task) => {
       try {
-        console.log("task", task);
+        if (!task || !task.id || !task.type) {
+          throw new Error(`Invalid task data: ${JSON.stringify(task)}`);
+        }
+
+        console.log("Fetching state for task:", task.id);
         const result = await namespaceWrapper.getTaskStateById(
           task.id,
           task.type,
@@ -236,10 +383,9 @@ async function getTaskState(taskList) {
             is_submission_required: true,
           },
         );
-        // console.log("result", result);
+
         if (!result || result.data === null) {
-          console.error(`Task ID ${task.id} returned null data.`);
-          return null;
+          throw new Error(`Task ID ${task.id} returned null data`);
         }
 
         return {
@@ -249,7 +395,7 @@ async function getTaskState(taskList) {
         };
       } catch (error) {
         console.error(
-          `Error fetching data for task ID ${task.id}:`,
+          `Error fetching data for task ID ${task?.id}:`,
           error.message,
         );
         return null;
@@ -270,70 +416,16 @@ async function getTaskState(taskList) {
 
     const successfulTasks = taskResults.filter((result) => result !== null);
 
+    if (successfulTasks.length === 0) {
+      console.warn('No successful task results found');
+    } else {
+      console.log(`Successfully fetched ${successfulTasks.length} task states`);
+    }
+
     return successfulTasks;
   } catch (error) {
-    console.error("Error in fetchAllTaskData:", error);
+    console.error("Error in getTaskState:", error.message);
+    console.error("Error stack:", error.stack);
     return [];
   }
-}
-
-// process the current submission and mapping the KOII staking key
-async function processSubmissions(
-  currentTaskState,
-  roundNumber,
-  distribution_proposal,
-) {
-  const finalDistributionList = {};
-  const { submissions } = currentTaskState;
-  const currentSubmission = submissions[roundNumber];
-
-  console.log("Get currentSubmission", currentSubmission);
-
-  if (!currentSubmission) {
-    console.log("Key not found in submissions for round:", roundNumber);
-    return finalDistributionList;
-  }
-
-  for (const key of Object.keys(currentSubmission)) {
-    const cid = currentSubmission[key].submission_value;
-    console.log(`Processing submission for ${key} with CID: ${cid}`);
-
-    try {
-      const cidData = await getDataFromCID("vote.json", cid);
-
-      if (
-        !cidData ||
-        !cidData.user_vote ||
-        !cidData.user_vote.vote ||
-        !cidData.user_vote.getStakingKeys
-      ) {
-        console.log("Invalid or missing data in CID response");
-        continue;
-      }
-
-      const { getKoiiStakingKey, getKPLStakingKey } =
-        cidData.user_vote.getStakingKeys;
-
-      console.log("Checking KOII wallet in SUBMISSION:", getKoiiStakingKey);
-      console.log("Checking KPL wallet in SUBMISSION:", getKPLStakingKey);
-      console.log(
-        "The number of distribution proposal available:",
-        Object.keys(distribution_proposal).length,
-      );
-
-      const kplBounty = distribution_proposal[getKPLStakingKey] || 0;
-      const koiiBounty = distribution_proposal[getKoiiStakingKey] || 0;
-      const currentBounty = Math.max(kplBounty, koiiBounty);
-
-      finalDistributionList[getKoiiStakingKey] = currentBounty;
-      console.log(
-        `Assigned highest bounty ${currentBounty} to KOII wallet ${getKoiiStakingKey} (KPL: ${kplBounty}, KOII: ${koiiBounty})`,
-      );
-    } catch (error) {
-      console.error("Error processing submission:", error.message);
-      continue;
-    }
-  }
-
-  return finalDistributionList;
 }
