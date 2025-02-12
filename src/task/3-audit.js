@@ -6,6 +6,18 @@ import bs58 from "bs58";
 import { REWARD_PER_ROUND } from "../config/constants.js";
 
 export async function audit(submission, roundNumber, submitterKey) {
+  if (!(await namespaceWrapper.storeGet(`dist_${roundNumber}`))) {
+    const weighting_factors = await generateTaskWeight(roundNumber);
+    await generateDistributionProposal(weighting_factors, roundNumber);
+  } else {
+    console.log(
+      `Distribution proposal already exists for round ${roundNumber}`,
+    );
+  }
+  return true;
+}
+
+async function generateTaskWeight(roundNumber) {
   // Get all submissions for the round
   const allSubmissions =
     await namespaceWrapper.getTaskSubmissionInfo(roundNumber);
@@ -117,13 +129,7 @@ export async function audit(submission, roundNumber, submitterKey) {
     weighting_factors,
   );
 
-  await generateDistributionProposal(weighting_factors, roundNumber);
-
-  return {
-    stakingKeyPairs: {}, // Already stored in namespace
-    userVotes: {}, // Already stored in namespace
-    weighting_factors, // The calculated normalized weights with comments
-  };
+  return weighting_factors;
 }
 
 async function generateDistributionProposal(weighting_factors, roundNumber) {
@@ -260,56 +266,56 @@ async function generateDistributionProposal(weighting_factors, roundNumber) {
 }
 
 async function getTaskState(taskList) {
-    try {
-      const fetchPromises = taskList.map(async (task) => {
-        try {
-          console.log("task", task);
-          const result = await namespaceWrapper.getTaskStateById(
-            task.id,
-            task.type,
-            {
-              is_available_balances_required: true,
-              is_stake_list_required: true,
-              is_submission_required: true,
-            },
-          );
-          // console.log("result", result);
-          if (!result || result.data === null) {
-            console.error(`Task ID ${task.id} returned null data.`);
-            return null;
-          }
-  
-          return {
-            taskId: task.id,
-            success: true,
-            data: result,
-          };
-        } catch (error) {
-          console.error(
-            `Error fetching data for task ID ${task.id}:`,
-            error.message,
-          );
+  try {
+    const fetchPromises = taskList.map(async (task) => {
+      try {
+        console.log("task", task);
+        const result = await namespaceWrapper.getTaskStateById(
+          task.id,
+          task.type,
+          {
+            is_available_balances_required: true,
+            is_stake_list_required: true,
+            is_submission_required: true,
+          },
+        );
+        // console.log("result", result);
+        if (!result || result.data === null) {
+          console.error(`Task ID ${task.id} returned null data.`);
           return null;
         }
-      });
-  
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Timeout: Fetching tasks took too long")),
-          120000,
-        ),
-      );
-  
-      const taskResults = await Promise.race([
-        Promise.all(fetchPromises),
-        timeoutPromise,
-      ]);
-  
-      const successfulTasks = taskResults.filter((result) => result !== null);
-  
-      return successfulTasks;
-    } catch (error) {
-      console.error("Error in fetchAllTaskData:", error);
-      return [];
-    }
+
+        return {
+          taskId: task.id,
+          success: true,
+          data: result,
+        };
+      } catch (error) {
+        console.error(
+          `Error fetching data for task ID ${task.id}:`,
+          error.message,
+        );
+        return null;
+      }
+    });
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(
+        () => reject(new Error("Timeout: Fetching tasks took too long")),
+        120000,
+      ),
+    );
+
+    const taskResults = await Promise.race([
+      Promise.all(fetchPromises),
+      timeoutPromise,
+    ]);
+
+    const successfulTasks = taskResults.filter((result) => result !== null);
+
+    return successfulTasks;
+  } catch (error) {
+    console.error("Error in fetchAllTaskData:", error);
+    return [];
   }
+}
