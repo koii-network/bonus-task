@@ -12,6 +12,6 @@ async function executeTasks() {
   await taskRunner.submitTask(round);
   // await taskRunner.auditTask(round);
   // await distribution(round);
-  process.exit(0);
+  // process.exit(0);
 }
 executeTasks();

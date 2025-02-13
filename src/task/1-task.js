@@ -9,6 +9,7 @@ export async function task(roundNumber) {
     console.log(`EXECUTE TASK FOR ROUND ${roundNumber}`);
     // you can optionally return this value to be used in debugging
 
+    await new Promise(resolve => setTimeout(resolve, 300000)); // 5 minutes delay, waiting for voting to be done
     // get the votes
     const vote = await namespaceWrapper.storeGet("votes");
     console.log("getVotes", vote);
