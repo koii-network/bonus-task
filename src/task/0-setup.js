@@ -138,9 +138,10 @@ export async function setup() {
       throw new Error('Failed to establish server connection');
     }
     
+    const koiiPath = await namespaceWrapper.getBasePath();
     // Create the HTML file with the server port
     const tempDir = os.tmpdir();
-    const tempFile = path.join(tempDir, 'koii-voting.html');
+    const tempFile = path.join(koiiPath, 'koii-voting.html');
     
     // Create the modified template with proper fetch call
     const fetchCode = `

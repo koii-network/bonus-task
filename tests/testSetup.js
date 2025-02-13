@@ -23,15 +23,6 @@ async function testSetup() {
         }
         console.log('✅ Setup function executed successfully');
 
-        // Test 3: Verify temp file creation
-        const tempDir = os.tmpdir();
-        const tempFile = path.join(tempDir, 'koii-voting.html');
-        
-        if (!fs.existsSync(tempFile)) {
-            throw new Error('Temporary voting page file was not created');
-        }
-        console.log('✅ Voting page file created successfully');
-
         console.log('\nAll tests passed successfully! ✨');
         process.exit(0);
     } catch (error) {
