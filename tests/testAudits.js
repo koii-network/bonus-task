@@ -6,6 +6,8 @@ import { REWARD_PER_ROUND } from "../src/config/constants.js";
 
 // Run the test
 async function testAudit(submission, roundNumber, submitterKey) {
+  const KPLstakingKey = await namespaceWrapper.storeGet('staking_key_koiiStakingKey1');
+  console.log(KPLstakingKey);
   if (!(await namespaceWrapper.storeGet(`dist_${roundNumber}`))) {
     const weighting_factors = await generateTaskWeight(roundNumber);
     await generateDistributionProposal(weighting_factors, roundNumber);

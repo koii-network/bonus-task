@@ -71,35 +71,38 @@ export async function distribution(submitters, bounty, roundNumber) {
     );
 
     for (const key of Object.keys(approvedSubmitters)) {
+      console.log(`Processing ${key}`);
+      const KPLstakingKey = await namespaceWrapper.storeGet(
+        `staking_key_${key}`,
+      );
 
-      console.log(`Processing submission for ${key} with CID: ${cid}`);
-
-        const { getKoiiStakingKey, getKPLStakingKey } =
-          cidData.distribution_proposal.getStakingKeys;
-
-        console.log("Checking KOII wallet:", getKoiiStakingKey);
-        console.log("Checking KPL wallet:", getKPLStakingKey);
-        console.log(
-          "The number of distribution proposal available:",
-          Object.keys(distribution_proposal).length,
-        );
+        console.log("Checking KOII wallet:", key);
+        console.log("Checking KPL wallet:", KPLstakingKey);
 
         // Check if either KPL or KOII staking wallet exists in distribution_proposal
-        const kplBounty = distribution_proposal[getKPLStakingKey] || 0;
-        const koiiBounty = distribution_proposal[getKoiiStakingKey] || 0;
+        const kplBounty = distribution_proposal[KPLstakingKey] || 0;
+        const koiiBounty = distribution_proposal[key] || 0;
         const currentBounty = Math.max(kplBounty, koiiBounty);
 
         if (currentBounty > 0) {
-          distributionList[getKoiiStakingKey] = currentBounty;
+          distributionList[key] = currentBounty;
           console.log(
-            `Assigned highest bounty ${currentBounty} to KOII wallet ${getKoiiStakingKey} (KPL: ${kplBounty}, KOII: ${koiiBounty})`,
+            `Assigned highest bounty ${currentBounty} to KOII wallet ${key} (KPL: ${kplBounty}, KOII: ${koiiBounty})`,
           );
-        } else {
-          distributionList[getKoiiStakingKey] = 0;
-          console.log(
-            `No bounty found for either KPL wallet ${getKPLStakingKey} or KOII wallet ${getKoiiStakingKey}`,
-          );
-        }
+      } else {
+        distributionList[key] = 0;
+        console.log(
+          `No bounty found for either KPL wallet ${KPLstakingKey} or KOII wallet ${key}`,
+        );
+      }
+    }
+    
+     // Check for approved submitters not in distributionList and assign them 0
+     for (const approvedKey of approvedSubmitters) {
+      if (!distributionList[approvedKey]) {
+        console.log(`Approved submitter ${approvedKey} not found in distribution proposal, assigning 0`);
+        distributionList[approvedKey] = 0;
+      }
     }
 
     console.log("Final distributionList:", distributionList);
