@@ -70,83 +70,38 @@ export async function distribution(submitters, bounty, roundNumber) {
       Object.keys(distribution_proposal).length,
     );
 
-    let taskState;
-    try {
-      taskState = await namespaceWrapper.getTaskState({
-        is_submission_required: true,
-      });
-    } catch (error) {
-      console.error("Error getting task state:", error.message);
-      return distributionList;
-    }
+    for (const key of Object.keys(approvedSubmitters)) {
+      console.log(`Processing ${key}`);
+      const KPLstakingKey = await namespaceWrapper.storeGet(
+        `staking_key_${key}`,
+      );
 
-    if (!taskState || !taskState.submissions) {
-      console.log("Invalid task state or missing submissions");
-      return distributionList;
-    }
-
-    const { submissions } = taskState;
-    const currentSubmission = submissions[roundNumber];
-
-    console.log("Get currentSubmission", currentSubmission);
-
-    if (!currentSubmission) {
-      console.log("Key not found in submissions for round:", roundNumber);
-      return distributionList;
-    }
-
-    for (const key of Object.keys(currentSubmission)) {
-      // Skip if the submitter is not in the approved list
-      if (!approvedSubmitters.includes(key)) {
-        console.log(
-          `Skipping submission from ${key} as they are not in approved submitters list`,
-        );
-        continue;
-      }
-
-      const cid = currentSubmission[key].submission_value;
-      console.log(`Processing submission for ${key} with CID: ${cid}`);
-
-      try {
-        const cidData = await getDataFromCID("distribution_proposal.json", cid);
-        if (
-          !cidData ||
-          !cidData.distribution_proposal ||
-          !cidData.distribution_proposal.getStakingKeys
-        ) {
-          console.log("Invalid or missing data in CID response");
-          continue;
-        }
-
-        const { getKoiiStakingKey, getKPLStakingKey } =
-          cidData.distribution_proposal.getStakingKeys;
-
-        console.log("Checking KOII wallet:", getKoiiStakingKey);
-        console.log("Checking KPL wallet:", getKPLStakingKey);
-        console.log(
-          "The number of distribution proposal available:",
-          Object.keys(distribution_proposal).length,
-        );
+        console.log("Checking KOII wallet:", key);
+        console.log("Checking KPL wallet:", KPLstakingKey);
 
         // Check if either KPL or KOII staking wallet exists in distribution_proposal
-        const kplBounty = distribution_proposal[getKPLStakingKey] || 0;
-        const koiiBounty = distribution_proposal[getKoiiStakingKey] || 0;
+        const kplBounty = distribution_proposal[KPLstakingKey] || 0;
+        const koiiBounty = distribution_proposal[key] || 0;
         const currentBounty = Math.max(kplBounty, koiiBounty);
 
         if (currentBounty > 0) {
-          distributionList[getKoiiStakingKey] = currentBounty;
+          distributionList[key] = currentBounty;
           console.log(
-            `Assigned highest bounty ${currentBounty} to KOII wallet ${getKoiiStakingKey} (KPL: ${kplBounty}, KOII: ${koiiBounty})`,
+            `Assigned highest bounty ${currentBounty} to KOII wallet ${key} (KPL: ${kplBounty}, KOII: ${koiiBounty})`,
           );
-        } else {
-          distributionList[getKoiiStakingKey] = 0;
-          console.log(
-            `No bounty found for either KPL wallet ${getKPLStakingKey} or KOII wallet ${getKoiiStakingKey}`,
-          );
-        }
-      } catch (error) {
-        console.error("Error processing submission:", error.message);
-        continue;
+      } else {
+        distributionList[key] = 0;
+        console.log(
+          `No bounty found for either KPL wallet ${KPLstakingKey} or KOII wallet ${key}`,
+        );
+      }
+    }
+    
+     // Check for approved submitters not in distributionList and assign them 0
+     for (const approvedKey of approvedSubmitters) {
+      if (!distributionList[approvedKey]) {
+        console.log(`Approved submitter ${approvedKey} not found in distribution proposal, assigning 0`);
+        distributionList[approvedKey] = 0;
       }
     }
 
