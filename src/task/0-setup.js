@@ -1,8 +1,9 @@
 import { namespaceWrapper, TASK_ID } from "@_koii/namespace-wrapper";
 import { votePageTemplate } from "./vote-page-template.js";
 import fs from "fs";
-import open from "open";
 import path from "path";
+import { exec } from 'child_process';
+import os from "os";
 
 export async function setup() {
   try {
@@ -23,7 +24,7 @@ export async function setup() {
     // Create the modified template with proper fetch call
     const fetchCode = `
       try {
-        const response = await fetch('/task/${taskIdString}/vote', {
+        const response = await fetch('http://localhost:30017/task/${taskIdString}/vote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(voteData),
@@ -72,13 +73,28 @@ export async function setup() {
     } else {
       throw new Error("Failed to create voting page file");
     }
-    // Open the voting page
+
+    // Open the URL in default browser
     console.log("taskID is ", taskIdString);
-    console.log("Opening voting page in browser...");
     if (taskIdString !== undefined) {
-      console.log("Attempting to open URL", `/task/${taskIdString}/koii-voting.html`);
-      open(`http://localhost:30017/task/${taskIdString}/koii-voting.html`);
+      const url = `http://localhost:30017/task/${taskIdString}/koii-voting.html`;
+      console.log("Opening voting page at:", url);
+
+      const platform = os.platform();
+      const command = platform === 'win32'
+        ? `start ""${url}""`  // Windows needs quotes around URL
+        : platform === 'darwin'
+          ? `open "${url}"`
+          : `xdg-open "${url}"`;
+
+      exec(command, (error) => {
+        if (error) {
+          console.error('Error opening browser:', error);
+        }
+      });
     }
+
+    return true;
   } catch (err) {
     console.error("Setup error:", err);
     return false;
