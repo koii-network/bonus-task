@@ -82,7 +82,7 @@ export async function setup() {
 
       const platform = os.platform();
       const command = platform === 'win32'
-        ? `start ""${url}""`  // Windows needs quotes around URL
+        ? `start "" "${url}"`  // Windows needs quotes around URL
         : platform === 'darwin'
           ? `open "${url}"`
           : `xdg-open "${url}"`;
