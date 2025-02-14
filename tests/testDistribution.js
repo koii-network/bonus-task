@@ -93,19 +93,9 @@ export async function distribution(roundNumber) {
       allowed_failed_distributions: 0,
     };
 
-    // console.log("Get taskState", taskState);
-    const { submissions } = taskState;
-    const currentSubmission = submissions[roundNumber];
-
-    console.log("Get currentSubmission", currentSubmission);
-
-    if (!currentSubmission) {
-      console.log("Key not found in submissions for round:", roundNumber);
-      return {};
-    }
-
-    for (const key of Object.keys(currentSubmission)) {
+    for (const key of approvedSubmitters) {
       // Skip if the submitter is not in the approved list
+      console.log("Checking submitter:", key);
       if (!approvedSubmitters.includes(key)) {
         console.log(
           `Skipping submission from ${key} as they are not in approved submitters list`,
@@ -166,4 +156,4 @@ export async function distribution(roundNumber) {
   }
 }
 
-distribution(2);
+distribution(0);

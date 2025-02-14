@@ -70,7 +70,7 @@ export async function distribution(submitters, bounty, roundNumber) {
       Object.keys(distribution_proposal).length,
     );
 
-    for (const key of Object.keys(approvedSubmitters)) {
+    for (const key of approvedSubmitters) {
       console.log(`Processing ${key}`);
       const KPLstakingKey = await namespaceWrapper.storeGet(
         `staking_key_${key}`,

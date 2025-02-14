@@ -112,7 +112,7 @@ environment: "TEST"
 #################################### FOR UPDATING TASKS ONLY ####################################
 
 ## Old Task ID ##
-task_id: "Cy1H53JLbVziG6RAZNKmRugyLQ3KwUDEKJS4rZKFDpcd"
+task_id: "8ENLB1frVEMq8JZoRsVXNvaqXUc9xVCMofqyHZCHh5oW"
 
 ## Migration Description ##
 migrationDescription: "Fix a setup issue"
