@@ -27,15 +27,21 @@ export async function audit(submission, roundNumber, submitterKey) {
 async function generateTaskWeight(roundNumber) {
   try {
     // Get all submissions for the round
-    const allSubmissions = await namespaceWrapper.getTaskSubmissionInfo(roundNumber);
+    const allSubmissions = await namespaceWrapper.getTaskState({is_submission_required: true});
     if (!allSubmissions) {
       throw new Error(`No submissions found for round ${roundNumber}`);
     }
 
-    console.log(`Processing ${Object.keys(allSubmissions).length} submissions for round ${roundNumber}`);
+    const roundSubmissions = allSubmissions.submissions[roundNumber];
+    if (!roundSubmissions) {
+      console.log(`No submissions found for specific round ${roundNumber}`);
+      return null;
+    }
+
+    console.log(`Processing ${Object.keys(roundSubmissions).length} submissions for round ${roundNumber}`);
 
     // Process all submissions to collect data from CIDs
-    for (const [koiiStakingKey, submission] of Object.entries(allSubmissions)) {
+    for (const [koiiStakingKey, submission] of Object.entries(roundSubmissions)) {
       try {
         // Check if the submission is already processed
         let cidCheck = await namespaceWrapper.storeGet(
@@ -46,7 +52,7 @@ async function generateTaskWeight(roundNumber) {
           continue;
         }
         // Get data from CID
-        const cidData = await getDataFromCID(submission.submission_value);
+        const cidData = await getDataFromCID(`vote.json`, submission.submission_value);
         if (!cidData) {
           throw new Error(`Failed to fetch data from CID: ${submission.submission_value}`);
         }
@@ -115,7 +121,7 @@ async function generateTaskWeight(roundNumber) {
     // Add debug logs for weight calculation
     console.log("\nCalculating final weights:");
     let totalWeight = 0;
-    for (const [koiiStakingKey, submission] of Object.entries(allSubmissions)) {
+    for (const [koiiStakingKey, submission] of Object.entries(roundSubmissions)) {
       try {
         const voteString = await namespaceWrapper.storeGet(
           `votes_${koiiStakingKey}`,

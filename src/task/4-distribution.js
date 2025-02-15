@@ -48,7 +48,7 @@ export async function distribution(submitters, bounty, roundNumber) {
 
     const distData = await namespaceWrapper.storeGet("dist_" + roundNumber);
 
-    console.log("Distribution data from storeGet:", distData);
+    console.log("Found distribution data for round:", roundNumber);
 
     if (!distData) {
       console.log("No distribution data found for round:", roundNumber);

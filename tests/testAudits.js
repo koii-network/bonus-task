@@ -6,14 +6,15 @@ import { REWARD_PER_ROUND } from "../src/config/constants.js";
 
 // Run the test
 async function testAudit(submission, roundNumber, submitterKey) {
-  const KPLstakingKey = await namespaceWrapper.storeGet('staking_key_koiiStakingKey1');
-  console.log(KPLstakingKey);
-  if (!(await namespaceWrapper.storeGet(`dist_${roundNumber}`))) {
-    const weighting_factors = await generateTaskWeight(roundNumber);
-    await generateDistributionProposal(weighting_factors, roundNumber);
-  } else {
-    console.log(`Distribution proposal already exists for round ${roundNumber}`);
-  }
+  const weighting_factors = await generateTaskWeight(roundNumber);
+  // const KPLstakingKey = await namespaceWrapper.storeGet('staking_key_koiiStakingKey1');
+  // console.log(KPLstakingKey);
+  // if (!(await namespaceWrapper.storeGet(`dist_${roundNumber}`))) {
+  //   const weighting_factors = await generateTaskWeight(roundNumber);
+  //   await generateDistributionProposal(weighting_factors, roundNumber);
+  // } else {
+  //   console.log(`Distribution proposal already exists for round ${roundNumber}`);
+  // }
 }
 
 async function generateDistributionProposal(weighting_factors, roundNumber) {
@@ -205,6 +206,8 @@ async function getTaskState(taskList) {
 }
 
 async function generateTaskWeight(roundNumber) {
+  const allSubmissions = await namespaceWrapper.getTaskState({is_submission_required: true});
+  console.log("allSubmissions", allSubmissions);
   // Create dummy submissions that match the real submission format
   const dummySubmissions = {
     koiiStakingKey1: {
