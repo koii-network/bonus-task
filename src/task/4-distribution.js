@@ -96,7 +96,7 @@ export async function distribution(submitters, bounty, roundNumber) {
       
       const cid = currentSubmission[key].submission_value;
       console.log(`Processing submission for ${key} with CID: ${cid}`);
-
+      await new Promise(r => setTimeout(r, 1000));
       try {
         const cidData = await getDataFromCID("distribution_proposal.json", cid);
         if (!cidData || !cidData.distribution_proposal || !cidData.distribution_proposal.getStakingKeys) {
