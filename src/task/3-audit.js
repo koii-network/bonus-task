@@ -9,7 +9,7 @@ export async function audit(submission, roundNumber, submitterKey) {
   console.log(`AUDIT SUBMISSION FOR ROUND ${roundNumber} from ${submitterKey}`);
 
   try {
-    const cid = submission;
+    const cid = submission.cid;
     // Fetch and validate the data
     const data = await getDataFromCID("distribution_proposal.json", cid);
     if (
