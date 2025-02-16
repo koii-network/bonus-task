@@ -42,7 +42,14 @@ export async function submission(roundNumber) {
     const getCID = await getSubmissionCID(getFilePath);
 
     console.log("submission completed");
-    return getCID;
+
+    const saveOnChain = JSON.stringify({
+      cid: getCID,
+      acc1: getStakingKeys.getKoiiStakingKey,
+      acc2: getStakingKeys.getKPLStakingKey
+    });
+
+    return saveOnChain;
   } catch (error) {
     console.error("MAKE SUBMISSION ERROR:", error);
   }
