@@ -94,18 +94,16 @@ export async function distribution(submitters, bounty, roundNumber) {
         continue;
       }
       
-      const cid = currentSubmission[key].submission_value;
+      const savedOnChain = currentSubmission[key].submission_value;
       console.log(`Processing submission for ${key} with CID: ${cid}`);
 
       try {
-        const cidData = await getDataFromCID("distribution_proposal.json", cid);
-        if (!cidData || !cidData.distribution_proposal || !cidData.distribution_proposal.getStakingKeys) {
+        const { cid, acc1: getKoiiStakingKey, acc2: getKPLStakingKey} = savedOnChain;
+        
+        if (!cid || cid.substr(0,7) !== 'bafybei') {
           console.log("Invalid or missing data in CID response");
           continue;
         }
-
-        const { getKoiiStakingKey, getKPLStakingKey } =
-          cidData.distribution_proposal.getStakingKeys;
 
         console.log("Checking KOII wallet:", getKoiiStakingKey);
         console.log("Checking KPL wallet:", getKPLStakingKey);
