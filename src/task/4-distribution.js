@@ -94,11 +94,11 @@ export async function distribution(submitters, bounty, roundNumber) {
         continue;
       }
       
-      const savedOnChain = currentSubmission[key].submission_value;
+      const submission = currentSubmission[key].submission_value;
       console.log(`Processing submission for ${key} with CID: ${cid}`);
 
       try {
-        const { cid, acc1: getKoiiStakingKey, acc2: getKPLStakingKey} = savedOnChain;
+        const { cid, acc1: getKoiiStakingKey, acc2: getKPLStakingKey} = submission;
         
         if (!cid || cid.substr(0,7) !== 'bafybei') {
           console.log("Invalid or missing data in CID response");
