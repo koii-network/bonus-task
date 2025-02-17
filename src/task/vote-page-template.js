@@ -5,6 +5,7 @@ export const votePageTemplate = `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Koii Task Voting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #2D5AF0;
@@ -15,6 +16,14 @@ export const votePageTemplate = `
             --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        .logo {
+            width: 60px;
+            height: 60px;
+            position: absolute;
+            left: 0rem;
+            top: -1rem;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -22,11 +31,13 @@ export const votePageTemplate = `
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-color);
+            font-family: 'Sora', sans-serif;
+            background: var(--Background-gradient, linear-gradient(180deg, #0E0E44 0%, #1A1A80 25.5%, #A2A2FA 47%, #DCDCF5 100%));
+            background-attachment: fixed;
             color: var(--text-color);
             line-height: 1.6;
             padding: 2rem;
+            min-height: 100vh;
         }
 
         .container {
@@ -37,10 +48,12 @@ export const votePageTemplate = `
         header {
             text-align: center;
             margin-bottom: 2rem;
+            position: relative;
+            padding-top: 1rem;
         }
 
         h1 {
-            color: var(--secondary-color);
+            color: white;
             margin-bottom: 1rem;
         }
 
@@ -73,7 +86,8 @@ export const votePageTemplate = `
         }
 
         .task-card.selected {
-            border: 2px solid var(--primary-color);
+            border-radius: 9px;
+            border: 2px solid var(--Orange-1, #FFA54B);
         }
 
         .selected-tasks {
@@ -98,11 +112,12 @@ export const votePageTemplate = `
             max-width: 300px;
             margin: 0 auto;
             padding: 1rem;
-            background-color: var(--primary-color);
+            background: var(--Purple-3, #353570);
             color: white;
             border: none;
-            border-radius: var(--border-radius);
+            border-radius: 6px;
             cursor: pointer;
+            font-family: 'Sora', sans-serif;
         }
 
         .submit-btn:disabled {
@@ -113,6 +128,7 @@ export const votePageTemplate = `
 <body>
     <div class="container">
         <header>
+            <img src="https://www.koii.network/_next/static/media/finnie-koii-logo-white.6a58e724.svg" alt="Koii Logo" class="logo" />
             <h1>Koii Task Voting</h1>
         </header>
 
