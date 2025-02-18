@@ -27,6 +27,14 @@ let taskList = [
     id: "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL", // [BETA]ArK:Dangerous Dave
     type: "KOII",
   },
+  {
+    id: "CjKiguQ1AkehkFWpMnjHWohC33VN4wU6WnzucazkZgUC", // Reverie Field Compute
+    type: "KPL",
+  },
+  {
+    id: "4ESVAytVPEmTWeVGxKX3kVhFrfFYPkXSCTMqFmWc5M4v", // Prometheus Builder Beta
+    type: "KOII",
+  },
 ];
 // let weighting_factors = {
 //   HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A: 0.1, // Mask Task

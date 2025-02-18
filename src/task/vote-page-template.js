@@ -207,7 +207,17 @@ export const votePageTemplate = `
                         id: "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL",
                         name: "[BETA]ArK:Dangerous Dave",
                         type: "KOII"
-                    }
+                    },
+                    {
+                        id: "CjKiguQ1AkehkFWpMnjHWohC33VN4wU6WnzucazkZgUC",
+                        name: "Reverie Field Compute",
+                        type: "KPL"
+                    },
+                    {
+                        id: "4ESVAytVPEmTWeVGxKX3kVhFrfFYPkXSCTMqFmWc5M4v",
+                        name: "Prometheus Builder Beta",
+                        type: "KOII"
+                    },
                 ];
                 console.log('Task list loaded:', this.taskList.length, 'tasks');
                 
