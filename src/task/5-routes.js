@@ -74,12 +74,14 @@ export function routes() {
             const taskId = voteData.selectedTasks[index];
             // Define task types mapping
             const taskTypes = {
-              HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A: "KPL",
-              H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M: "KPL",
-              AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy: "KPL",
-              BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH: "KPL",
-              "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc": "KPL",
+              "FscMYDMwfexFrFtEQ5SKLJDTYnYCbeBPkJGyeYeXs3va": "KPL",
+              "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M": "KPL",
+              "AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy": "KPL",
+              "Bvq5oi1dWWfqtUY8nxe7F1ZDwpr49yKX4uXxuxDq8NNf": "KPL",
+              "2Rsix6MnuehaB8Vov33Bv5LUwRvrhVN4pLnsTeBoGXbB": "KPL",
               "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL": "KOII",
+              "CjKiguQ1AkehkFWpMnjHWohC33VN4wU6WnzucazkZgUC": "KPL",
+              "4ESVAytVPEmTWeVGxKX3kVhFrfFYPkXSCTMqFmWc5M4v": "KOII"
             };
             acc[taskId] = {
               weighting_factors: vote.weight,

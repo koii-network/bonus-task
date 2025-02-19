@@ -179,28 +179,28 @@ export const votePageTemplate = `
                 this.selectedTasks = [];
                 this.taskList = [
                     {
-                        id: "HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A",
-                        name: "Mask Task",
+                        id: "FscMYDMwfexFrFtEQ5SKLJDTYnYCbeBPkJGyeYeXs3va",
+                        name: "Mask Social Feeds",
                         type: "KPL"
                     },
                     {
                         id: "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M",
-                        name: "Free Fire Task",
+                        name: "Free Fire Task!",
                         type: "KPL"
                     },
                     {
                         id: "AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy",
-                        name: "BigBig",
+                        name: "Big Big Task",
                         type: "KPL",
                     },
                     {
-                        id: "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH",
-                        name: "Truflation",
+                        id: "Bvq5oi1dWWfqtUY8nxe7F1ZDwpr49yKX4uXxuxDq8NNf",
+                        name: "Inflation Monitoring",
                         type: "KPL",
                     },
                     {
-                        id: "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc",
-                        name: "Astrolink",
+                        id: "2Rsix6MnuehaB8Vov33Bv5LUwRvrhVN4pLnsTeBoGXbB",
+                        name: "Astrolink <> Koii",
                         type: "KPL"
                     },
                     {

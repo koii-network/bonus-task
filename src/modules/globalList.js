@@ -4,36 +4,44 @@
 // FOR THE MAINNET
 let taskList = [
   {
-    id: "HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A", // Mask Task
-    type: "KPL",
+      id: "HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A",
+      name: "Mask Task",
+      type: "KPL"
   },
   {
-    id: "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M", //Free Fire Task
-    type: "KPL",
+      id: "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M",
+      name: "Free Fire Task",
+      type: "KPL"
   },
   {
-    id: "AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy", // BigBig
-    type: "KPL",
+      id: "AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy",
+      name: "BigBig",
+      type: "KPL",
   },
   {
-    id: "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH", // Truflation
-    type: "KPL",
+      id: "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH",
+      name: "Truflation",
+      type: "KPL",
   },
   {
-    id: "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc", // Astrolink
-    type: "KPL",
+      id: "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc",
+      name: "Astrolink",
+      type: "KPL"
   },
   {
-    id: "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL", // [BETA]ArK:Dangerous Dave
-    type: "KOII",
+      id: "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL",
+      name: "[BETA]ArK:Dangerous Dave",
+      type: "KOII"
   },
   {
-    id: "CjKiguQ1AkehkFWpMnjHWohC33VN4wU6WnzucazkZgUC", // Reverie Field Compute
-    type: "KPL",
+      id: "CjKiguQ1AkehkFWpMnjHWohC33VN4wU6WnzucazkZgUC",
+      name: "Reverie Field Compute",
+      type: "KPL"
   },
   {
-    id: "4ESVAytVPEmTWeVGxKX3kVhFrfFYPkXSCTMqFmWc5M4v", // Prometheus Builder Beta
-    type: "KOII",
+      id: "4ESVAytVPEmTWeVGxKX3kVhFrfFYPkXSCTMqFmWc5M4v",
+      name: "Prometheus Builder Beta",
+      type: "KOII"
   },
 ];
 // let weighting_factors = {
