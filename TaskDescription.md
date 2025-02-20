@@ -12,7 +12,7 @@ In order to support these new launches, and make sure developers get access to l
 
 ## How it works?
 
-1. Once you run the task, a voting page will pop up in your browser window. (Note: if the page doesn't show up visit [localhost:30017/task/`<taskId>`/koii-voting.html](http://localhost:30017/task/`<taskId>`/koii-voting.html) in your browser) 🚀
+1. Once you run the task, a voting page will pop up in your browser window. (Note: if the page doesn't show up visit [localhost:30017/task/"taskId"/koii-voting.html](http://localhost:30017/task/"taskId"/koii-voting.html) in your browser) 🚀
 2. Vote for the top three tasks you want to support 🙌
 3. The final task weighting will be decided by overall community votes
 4. The more you stake on the task in the task list, the more voting power you'll have 💪

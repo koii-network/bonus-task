@@ -112,7 +112,7 @@ environment: "PRODUCTION"
 #################################### FOR UPDATING TASKS ONLY ####################################
 
 ## Old Task ID ##
-task_id: "14DpRtNGdDLwcJN42G8tNSbXM9KvrhN3CuWWTM85GG4D"
+task_id: "8Mb4H3RFP6zMpFPqp4j81w1w7G2ynBf38DMdzANCo5XJ"
 
 ## Migration Description ##
-migrationDescription: "Release Bonus Task v2 with voting page, task update detection, and more features."
+migrationDescription: "Hotfix for submission and audit. Fix a task description."

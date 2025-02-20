@@ -23,11 +23,15 @@ export async function submission(roundNumber) {
       return null;
     }
 
+    // Add debug logging
+    console.log("Raw vote data:", vote);
+    console.log("Type of vote:", typeof vote);
+
     // Create the submission data structure
     const submissionData = {
       user_vote: {
         getStakingKeys,
-        vote: JSON.parse(vote).votes
+        vote: typeof vote === 'string' ? JSON.parse(vote) : vote
       }
     };
 
