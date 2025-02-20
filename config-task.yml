@@ -46,15 +46,15 @@ task_audit_program: "dist/main.js"
 ## Round Time ##
 # Duration of task, measured in slots (with each slot approximately equal to 408ms). Should be at least 800 slots.
 # See https://www.koii.network/docs/concepts/what-are-tasks/what-are-tasks/gradual-consensus for more information on how round time, audit window, and submission window work.
-round_time: 2000
+round_time: 6000
 
 ## Audit Window ##
 # The audit window should be at least 1/3 of the round time.
-audit_window: 800
+audit_window: 2200
 
 ## Submission Window ##
 # The submission window should be at least 1/3 of the round time.
-submission_window: 1200
+submission_window: 3300
 
 ## Minimum Stake Amount ##
 # The minimum amount of KOII that a user must stake in order to participate in the task.
@@ -71,12 +71,12 @@ token_type: "FJG2aEPtertCXoedgteCCMmgngSZo1Zd715oNBzR7xpR"
 ## Total Bounty Amount ##
 # The total bounty amount that will be available for distribution over all rounds.
 # Does nothing when updating a task.
-total_bounty_amount: 50000
+total_bounty_amount: 10000000
 
 ## Bounty Amount per Round ##
 # The maximum amount that can be distributed per round.
 # If the actual distribution per round exceeds this amount, the distribution list will fail.
-bounty_amount_per_round: 500
+bounty_amount_per_round: 1500
 
 ## Allowed Failed Distributions ##
 # Number of retries allowed for the distribution list if it is fails audit.
@@ -112,7 +112,7 @@ environment: "PRODUCTION"
 #################################### FOR UPDATING TASKS ONLY ####################################
 
 ## Old Task ID ##
-task_id: "GKvoaVSNAfV96nGui8EmhWcVpg38n6s545isjHDUQoVF"
+task_id: "14DpRtNGdDLwcJN42G8tNSbXM9KvrhN3CuWWTM85GG4D"
 
 ## Migration Description ##
-migrationDescription: "Improve task behavior. Fix a check distribution issue. Decrease the minimum stake amount. Increase submission window."
+migrationDescription: "Release Bonus Task v2 with voting page, task update detection, and more features."

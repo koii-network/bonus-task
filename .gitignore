@@ -17,3 +17,5 @@ metadata.json
 .npmrc
 ./distribution_proposal.json
 distribution_proposal.json
+vote.json
+koii-voting.html

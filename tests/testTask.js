@@ -10,7 +10,8 @@ async function executeTasks() {
   // //   for submission testing
   // await new Promise((resolve) => setTimeout(resolve, 3000));
   // await taskRunner.submitTask(round);
+  // await taskRunner.auditTask(round);
   // await distribution(round);
-  process.exit(0);
+  // process.exit(0);
 }
 executeTasks();

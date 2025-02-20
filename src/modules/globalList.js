@@ -4,38 +4,54 @@
 // FOR THE MAINNET
 let taskList = [
   {
-    id: "HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A", // Mask Task
-    type: "KPL",
+      id: "HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A",
+      name: "Mask Task",
+      type: "KPL"
   },
   {
-    id: "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M", //Free Fire Task
-    type: "KPL",
+      id: "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M",
+      name: "Free Fire Task",
+      type: "KPL"
   },
   {
-    id: "AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy", // BigBig
-    type: "KPL",
+      id: "AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy",
+      name: "BigBig",
+      type: "KPL",
   },
   {
-    id: "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH", // Truflation
-    type: "KPL",
+      id: "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH",
+      name: "Truflation",
+      type: "KPL",
   },
   {
-    id:"5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc", // Astrolink
-    type: "KPL",
+      id: "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc",
+      name: "Astrolink",
+      type: "KPL"
   },
   {
-    id: "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL", // [BETA]ArK:Dangerous Dave
-    type: "KOII",
+      id: "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL",
+      name: "[BETA]ArK:Dangerous Dave",
+      type: "KOII"
+  },
+  {
+      id: "CjKiguQ1AkehkFWpMnjHWohC33VN4wU6WnzucazkZgUC",
+      name: "Reverie Field Compute",
+      type: "KPL"
+  },
+  {
+      id: "4ESVAytVPEmTWeVGxKX3kVhFrfFYPkXSCTMqFmWc5M4v",
+      name: "Prometheus Builder Beta",
+      type: "KOII"
   },
 ];
-let weighting_factors = {
-  HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A: 0.1, // Mask Task
-  "H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M": 0.2, // Free Token Task
-  AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy: 0.2, // BIGBIG
-  "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc": 0.2, // Astrolink
-  "BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH": 0.1, // Truflation
-  "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL": 0.2, // [BETA]ArK:Dangerous Dave
-};
+// let weighting_factors = {
+//   HRFuq1iK8eTsoG6nFf3PydcpGZLX9Poqk2QhFuRjGs3A: 0.1, // Mask Task
+//   H5CKDzSi2qWs7y7JGMX8sGvAZnWcUDx8k1mCMVWyJf1M: 0.2, // Free Token Task
+//   AD8KJJn9ysmps74dAdNYA6PaVGRyaZwrtNpEXJWCx4wy: 0.2, // BIGBIG
+//   "5s8stHNHhaHo3fS49uwC8jaRCrodCUZg9YfUPkYxsfRc": 0.2, // Astrolink
+//   BshiEPaoEKkyiadGsRmxg23iDosJKr3seqoN81GYJBBH: 0.1, // Truflation
+//   "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL": 0.2, // [BETA]ArK:Dangerous Dave
+// };
 
 let developerKey = {
   // system key
@@ -73,5 +89,11 @@ let developerKey = {
 //   KiwDeyqgkC8bgKgXkBLa4qQ2honuBB4Zu152C6Ggb9J: 0.3, // BIGBIG
 //   D5G1uRNHwZiNkDAdrs3SjFtsdH683fKRQTNa8X9Cj3Nv: 0.2, // Truflation
 // };
+
+let weighting_factors = {};
+
+taskList.forEach((task) => {
+  weighting_factors[task.id] = 0;
+});
 
 export { taskList, weighting_factors, developerKey };

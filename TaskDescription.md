@@ -10,14 +10,11 @@ When new projects and tokens launch on Koii, they need a bit of a boost until th
 
 In order to support these new launches, and make sure developers get access to lots of nodes right away, the bonus task will issue $KOII rewards on top of the normal rewards from new tasks.
 
-## Which Tasks are Eligible?
+## How it works?
 
-Run these tasks to earn your bonus:
-- Free Fire Task
-- Mask Social Feeds
-- Astrolink Task
-- Big Big Task
-- Inflation Monitoring
-- ArK: Dangerous Dave Task
-
-We will soon incorporate voting to determine which tasks are eligible for the bonus, so be sure to keep your node staked on the Bonus Task to build up voting power. The longer you stake, the more voting power you'll have.
+1. Once you run the task, a voting page will pop up in your browser window. (Note: if the page doesn't show up visit [localhost:30017/task/`<taskId>`/koii-voting.html](http://localhost:30017/task/`<taskId>`/koii-voting.html) in your browser) 🚀
+2. Vote for the top three tasks you want to support 🙌
+3. The final task weighting will be decided by overall community votes
+4. The more you stake on the task in the task list, the more voting power you'll have 💪
+5. Make sure to keep your node on to get the bonus 📈
+6. 1500 $KOII are distributed every round (that's 50k $KOII per day 🤑🤑🤑)
