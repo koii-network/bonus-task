@@ -105,7 +105,16 @@ export async function distribution(submitters, bounty, roundNumber) {
       }
     }
 
+    // Check for approved submitters not in distributionList and assign them 0
+    for (const approvedKey of approvedSubmitters) {
+      if (!distributionList[approvedKey]) {
+        console.log(`Approved submitter ${approvedKey} not found in distribution proposal, assigning 0`);
+        distributionList[approvedKey] = 0;
+      }
+    }
+
     console.log("Final distributionList:", distributionList);
+    
     return distributionList;
   } catch (error) {
     console.error("Error in distribution function:", error.message);
