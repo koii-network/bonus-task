@@ -48,7 +48,7 @@ async function generateTaskWeight(roundNumber) {
           `vote_cid_${koiiStakingKey}`,
         );
         if (cidCheck === submission.submission_value) {
-          console.log(`CID already processed for key ${koiiStakingKey}`);
+          // console.log(`CID already processed for key ${koiiStakingKey}`);
           continue;
         }
         // Get data from CID
@@ -123,12 +123,18 @@ async function generateTaskWeight(roundNumber) {
     let totalWeight = 0;
     for (const [koiiStakingKey, submission] of Object.entries(roundSubmissions)) {
       try {
-        const voteString = await namespaceWrapper.storeGet(
-          `votes_${koiiStakingKey}`,
-        );
+        const voteString = await namespaceWrapper.storeGet(`votes_${koiiStakingKey}`);
         if (!voteString) continue;
 
-        const voteData = JSON.parse(voteString);
+        let voteData;
+        try {
+          // Try parsing if it's a string, otherwise use as is if it's already an object
+          voteData = typeof voteString === 'string' ? JSON.parse(voteString) : voteString;
+        } catch (error) {
+          console.error(`Error parsing vote data for key ${koiiStakingKey}:`, error.message);
+          continue;
+        }
+
         if (!voteData || !voteData.votes) {
           throw new Error('Invalid vote data structure');
         }

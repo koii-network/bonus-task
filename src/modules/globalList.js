@@ -39,7 +39,7 @@ let taskList = [
       type: "KPL"
   },
   {
-      id: "4ESVAytVPEmTWeVGxKX3kVhFrfFYPkXSCTMqFmWc5M4v",
+      id: "hF7G6BR59L6F3dDfJFrL3N8AtvKpS4GJjrAJL5cQA5V",
       name: "Prometheus Builder Beta",
       type: "KOII"
   },
