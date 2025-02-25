@@ -81,7 +81,7 @@ export function routes() {
               "2Rsix6MnuehaB8Vov33Bv5LUwRvrhVN4pLnsTeBoGXbB": "KPL",
               "99dHXaUbJzr8o96qs8sog4PBfM8FksM81mkkPK9jxiLL": "KOII",
               "CjKiguQ1AkehkFWpMnjHWohC33VN4wU6WnzucazkZgUC": "KPL",
-              "4ESVAytVPEmTWeVGxKX3kVhFrfFYPkXSCTMqFmWc5M4v": "KOII"
+              "hF7G6BR59L6F3dDfJFrL3N8AtvKpS4GJjrAJL5cQA5V": "KOII"
             };
             acc[taskId] = {
               weighting_factors: vote.weight,
