@@ -112,7 +112,7 @@ environment: "PRODUCTION"
 #################################### FOR UPDATING TASKS ONLY ####################################
 
 ## Old Task ID ##
-task_id: "8Mb4H3RFP6zMpFPqp4j81w1w7G2ynBf38DMdzANCo5XJ"
+task_id: "7Zef7hPST5g6N452pSAGXMfyy7ux3m3b4y6sj9YatgAY"
 
 ## Migration Description ##
-migrationDescription: "Hotfix for submission and audit. Fix a task description."
+migrationDescription: "Fix a potential bug in task weight calculation. Improve task logging."

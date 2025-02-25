@@ -317,7 +317,7 @@ async function generateTaskWeight(roundNumber) {
     let cidCheck = await namespaceWrapper.storeGet(`vote_cid_${koiiStakingKey}`);
     console.log("cidCheck", cidCheck);
     if (cidCheck === submission.submission_value) {
-      console.log(`CID already processed for key ${koiiStakingKey}`);
+      // console.log(`CID already processed for key ${koiiStakingKey}`);
       continue;
     }
     await namespaceWrapper.storeSet(`vote_cid_${koiiStakingKey}`, submission.submission_value);
